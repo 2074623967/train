@@ -3,7 +3,10 @@ package com.muke.service.impl;
 import cn.hutool.core.collection.CollUtil;
 import com.muke.domain.Member;
 import com.muke.domain.MemberExample;
+import com.muke.exception.BusinessException;
+import com.muke.exception.BusinessExceptionEnum;
 import com.muke.mapper.MemberMapper;
+import com.muke.req.MemberRegisterReq;
 import com.muke.service.MemberService;
 import jakarta.annotation.Resource;
 import org.springframework.stereotype.Service;
@@ -28,16 +31,16 @@ public class MemberServiceImpl implements MemberService {
     }
 
     @Override
-    public long register(String mobile) {
+    public long register(MemberRegisterReq req) {
         MemberExample memberExample = new MemberExample();
-        memberExample.createCriteria().andMobileEqualTo(mobile);
+        memberExample.createCriteria().andMobileEqualTo(req.getMobile());
         List<Member> list = memberMapper.selectByExample(memberExample);
         if (CollUtil.isNotEmpty(list)) {
-            throw new RuntimeException("手机号已注册");
+            throw new BusinessException(BusinessExceptionEnum.MEMBER_MOBILE_EXIST);
         }
         Member member = new Member();
         member.setId(System.currentTimeMillis());
-        member.setMobile(mobile);
+        member.setMobile(req.getMobile());
         memberMapper.insert(member);
         return member.getId();
     }
