@@ -8,6 +8,7 @@ import com.muke.exception.BusinessExceptionEnum;
 import com.muke.mapper.MemberMapper;
 import com.muke.req.MemberRegisterReq;
 import com.muke.service.MemberService;
+import com.muke.util.SnowUtil;
 import jakarta.annotation.Resource;
 import org.springframework.stereotype.Service;
 
@@ -39,7 +40,7 @@ public class MemberServiceImpl implements MemberService {
             throw new BusinessException(BusinessExceptionEnum.MEMBER_MOBILE_EXIST);
         }
         Member member = new Member();
-        member.setId(System.currentTimeMillis());
+        member.setId(SnowUtil.getSnowflakeNextId());
         member.setMobile(req.getMobile());
         memberMapper.insert(member);
         return member.getId();
