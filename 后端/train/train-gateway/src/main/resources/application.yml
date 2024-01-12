@@ -10,4 +10,13 @@ spring:
             http://127.0.0.1:8001
           predicates:
             - Path=/member/**
+      globalcors:
+        cors-configurations:
+          '[/**]':
+              allowedOriginPatterns: "*" # 允许请求来源（老版本叫allowedOrigin）
+              allowedHeaders: "*" # 允许携带的头信息
+              allowedMethods: "*" # 允许的请求方式
+              allowCredentials: true # 是否允许携带cookie
+              maxAge: 3600 # 跨域检测的有效期，会发起一个OPTION请求
+
 

@@ -1,14 +1,14 @@
 package com.muke.controller;
 
+import com.muke.req.MemberLoginReq;
 import com.muke.req.MemberRegisterReq;
+import com.muke.req.MemberSendCodeReq;
 import com.muke.resp.CommonResp;
+import com.muke.resp.MemberLoginResp;
 import com.muke.service.MemberService;
 import jakarta.annotation.Resource;
 import jakarta.validation.Valid;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 /**
  * 会员模块
@@ -35,4 +35,15 @@ public class MemberController {
         return new CommonResp<>(register);
     }
 
+    @PostMapping("/send-code")
+    public CommonResp<Long> sendCode(@Valid @RequestBody MemberSendCodeReq req) {
+        memberService.sendCode(req);
+        return new CommonResp<>();
+    }
+
+    @PostMapping("/login")
+    public CommonResp<MemberLoginResp> login(@Valid @RequestBody MemberLoginReq req) {
+        MemberLoginResp resp = memberService.login(req);
+        return new CommonResp<>(resp);
+    }
 }
