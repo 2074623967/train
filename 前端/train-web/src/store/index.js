@@ -4,13 +4,13 @@ const MEMBER = 'MEMBER';
 
 export default createStore({
   state: {
-    member: window.sessionStorage.getItem(MEMBER) || {},
+    member: window.SessionStorage.get(MEMBER) || {},
   },
   getters: {},
   mutations: {
     setMember(state, _member) {
       state.member = _member;
-      window.sessionStorage.setItem(MEMBER, _member);
+      window.SessionStorage.set(MEMBER, _member);
     },
   },
   actions: {},
