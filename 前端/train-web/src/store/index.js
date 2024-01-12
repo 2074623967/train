@@ -1,9 +1,18 @@
-import { createStore } from 'vuex'
+import { createStore } from 'vuex';
+
+const MEMBER = 'MEMBER';
 
 export default createStore({
-  state: {},
+  state: {
+    member: window.sessionStorage.getItem(MEMBER) || {},
+  },
   getters: {},
-  mutations: {},
+  mutations: {
+    setMember(state, _member) {
+      state.member = _member;
+      window.sessionStorage.setItem(MEMBER, _member);
+    },
+  },
   actions: {},
-  modules: {}
-})
+  modules: {},
+});
