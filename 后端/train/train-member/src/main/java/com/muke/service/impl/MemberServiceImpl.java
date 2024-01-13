@@ -23,7 +23,7 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 
 /**
- * 会员模块
+ * 会员业务层
  *
  * @author tangcj
  * @date 2024/01/11 11:29
@@ -60,6 +60,7 @@ public class MemberServiceImpl implements MemberService {
     public void sendCode(MemberSendCodeReq req) {
         String mobile = req.getMobile();
         Member memberDB = selectByMobile(mobile);
+
         // 如果手机号不存在，则插入一条记录
         if (ObjectUtil.isNull(memberDB)) {
             LOG.info("手机号不存在，插入一条记录");
