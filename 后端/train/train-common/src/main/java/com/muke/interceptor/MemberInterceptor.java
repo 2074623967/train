@@ -5,7 +5,7 @@ import cn.hutool.json.JSONObject;
 import cn.hutool.json.JSONUtil;
 import com.muke.resp.MemberLoginResp;
 import com.muke.util.JwtUtil;
-import context.LoginMemberContext;
+import com.muke.context.LoginMemberContext;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;

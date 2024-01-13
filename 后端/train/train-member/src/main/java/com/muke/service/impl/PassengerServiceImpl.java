@@ -3,16 +3,24 @@ package com.muke.service.impl;
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.date.DateTime;
 import cn.hutool.core.util.ObjectUtil;
+import com.github.pagehelper.PageHelper;
+import com.github.pagehelper.PageInfo;
 import com.muke.domain.Passenger;
+import com.muke.domain.PassengerExample;
 import com.muke.mapper.PassengerMapper;
+import com.muke.req.PassengerQueryReq;
 import com.muke.req.PassengerSaveReq;
+import com.muke.resp.PageResp;
+import com.muke.resp.PassengerQueryResp;
 import com.muke.service.PassengerService;
 import com.muke.util.SnowUtil;
-import context.LoginMemberContext;
+import com.muke.context.LoginMemberContext;
 import jakarta.annotation.Resource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 /**
  * 乘车人业务层
@@ -41,5 +49,31 @@ public class PassengerServiceImpl implements PassengerService {
             passenger.setUpdateTime(now);
             passengerMapper.updateByPrimaryKey(passenger);
         }
+    }
+
+    @Override
+    public PageResp<PassengerQueryResp> queryList(PassengerQueryReq req) {
+        PassengerExample passengerExample = new PassengerExample();
+        passengerExample.setOrderByClause("id desc");
+        PassengerExample.Criteria criteria = passengerExample.createCriteria();
+        if (ObjectUtil.isNotNull(req.getMemberId())) {
+            criteria.andMemberIdEqualTo(req.getMemberId());
+        }
+
+        LOG.info("查询页码：{}", req.getPage());
+        LOG.info("每页条数：{}", req.getSize());
+        PageHelper.startPage(req.getPage(), req.getSize());
+        List<Passenger> passengerList = passengerMapper.selectByExample(passengerExample);
+
+        PageInfo<Passenger> pageInfo = new PageInfo<>(passengerList);
+        LOG.info("总行数：{}", pageInfo.getTotal());
+        LOG.info("总页数：{}", pageInfo.getPages());
+
+        List<PassengerQueryResp> list = BeanUtil.copyToList(passengerList, PassengerQueryResp.class);
+
+        PageResp<PassengerQueryResp> pageResp = new PageResp<>();
+        pageResp.setTotal(pageInfo.getTotal());
+        pageResp.setList(list);
+        return pageResp;
     }
 }

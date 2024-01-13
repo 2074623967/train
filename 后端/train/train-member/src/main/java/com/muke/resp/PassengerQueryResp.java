@@ -1,43 +1,45 @@
-package com.muke.req;
+package com.muke.resp;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import jakarta.validation.constraints.NotBlank;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
+
 
 import java.util.Date;
 
 /**
- * 乘车人新增/编辑类
+ * 乘车人列表查询返回封装类
  *
  * @author tangcj
- * @date 2024/01/13 10:58
+ * @date 2024/01/13 17:18
  **/
-public class PassengerSaveReq {
+public class PassengerQueryResp {
+
     /**
      * id
      */
+    @JsonSerialize(using= ToStringSerializer.class)
     private Long id;
 
     /**
      * 会员id
      */
+    @JsonSerialize(using= ToStringSerializer.class)
     private Long memberId;
 
     /**
      * 姓名
      */
-    @NotBlank(message = "【姓名】不能为空")
     private String name;
 
     /**
      * 身份证
      */
-    @NotBlank(message = "【身份证】不能为空")
     private String idCard;
 
     /**
      * 旅客类型|枚举[PassengerTypeEnum]
      */
-    @NotBlank(message = "【旅客类型】不能为空")
     private String type;
 
     /**
