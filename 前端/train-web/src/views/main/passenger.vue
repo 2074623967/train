@@ -76,11 +76,7 @@ import axios from 'axios';
 export default defineComponent({
   name: 'passenger-view',
   setup() {
-    const PASSENGER_TYPE_ARRAY = ref([
-      { desc: '成人', code: 1 },
-      { desc: '儿童', code: 2 },
-      { desc: '学生', code: 3 },
-    ]);
+    const PASSENGER_TYPE_ARRAY = window.PASSENGER_TYPE_ARRAY;
     const visible = ref(false);
     const passenger = ref({
       id: undefined,
