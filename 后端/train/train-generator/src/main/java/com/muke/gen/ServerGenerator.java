@@ -20,7 +20,7 @@ import java.util.Map;
  **/
 public class ServerGenerator {
 
-    static String serverPath = "train-[module]\\src\\main\\java\\com\\muke\\service\\";
+    static String serverPath = "train-[module]\\src\\main\\java\\com\\muke\\";
     static String pomPath = "train-generator/pom.xml";
     static String module = "";
 
@@ -59,15 +59,26 @@ public class ServerGenerator {
         param.put("Domain", Domain);
         param.put("domain", domain);
         param.put("do_main", do_main);
-        FreemarkerUtil.initConfig("service.ftl");
-        FreemarkerUtil.generator(serverPath+Domain+"Service.java",param);
-        FreemarkerUtil.initConfig("serviceImpl.ftl");
-        FreemarkerUtil.generator(serverPath+"impl\\"+Domain+"ServiceImpl.java",param);
+        gen(Domain, param,"service","service");
+        gen(Domain, param,"service\\impl\\","serviceImpl");
+        gen(Domain, param,"controller","controller");
+//        FreemarkerUtil.initConfig("serviceImpl.ftl");
+//        FreemarkerUtil.generator(serverPath+"impl\\"+Domain+"ServiceImpl.java",param);
 
 //        FreemarkerUtil.initConfig("test.ftl");
 //        HashMap<String, Object> param = new HashMap<>();
 //        param.put("domain","Test");
 //        FreemarkerUtil.generator(toPath+"Test.java",param);
+    }
+
+    private static void gen(String Domain, Map<String, Object> param, String packageName, String target) throws IOException, TemplateException {
+        FreemarkerUtil.initConfig(target + ".ftl");
+        String toPath = serverPath + packageName + "/";
+        new File(toPath).mkdirs();
+        String Target = target.substring(0, 1).toUpperCase() + target.substring(1);
+        String fileName = toPath + Domain + Target + ".java";
+        System.out.println("开始生成：" + fileName);
+        FreemarkerUtil.generator(fileName, param);
     }
 
     private static String getGeneratorPath() throws DocumentException {
