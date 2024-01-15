@@ -14,7 +14,6 @@ import com.muke.resp.PageResp;
 import com.muke.resp.PassengerQueryResp;
 import com.muke.service.PassengerService;
 import com.muke.util.SnowUtil;
-import com.muke.context.LoginMemberContext;
 import jakarta.annotation.Resource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,16 +21,10 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 
-/**
- * 乘车人业务层
- *
- * @author tangcj
- * @date 2024/01/13 10:47
- **/
 @Service
 public class PassengerServiceImpl implements PassengerService {
 
-    private static final Logger LOG = LoggerFactory.getLogger(PassengerServiceImpl.class);
+    private static final Logger LOG = LoggerFactory.getLogger(PassengerService.class);
 
     @Resource
     private PassengerMapper passengerMapper;
@@ -40,7 +33,6 @@ public class PassengerServiceImpl implements PassengerService {
         DateTime now = DateTime.now();
         Passenger passenger = BeanUtil.copyProperties(req, Passenger.class);
         if (ObjectUtil.isNull(passenger.getId())) {
-            passenger.setMemberId(LoginMemberContext.getId());
             passenger.setId(SnowUtil.getSnowflakeNextId());
             passenger.setCreateTime(now);
             passenger.setUpdateTime(now);
@@ -51,14 +43,10 @@ public class PassengerServiceImpl implements PassengerService {
         }
     }
 
-    @Override
     public PageResp<PassengerQueryResp> queryList(PassengerQueryReq req) {
         PassengerExample passengerExample = new PassengerExample();
         passengerExample.setOrderByClause("id desc");
         PassengerExample.Criteria criteria = passengerExample.createCriteria();
-        if (ObjectUtil.isNotNull(req.getMemberId())) {
-            criteria.andMemberIdEqualTo(req.getMemberId());
-        }
 
         LOG.info("查询页码：{}", req.getPage());
         LOG.info("每页条数：{}", req.getSize());
@@ -77,7 +65,6 @@ public class PassengerServiceImpl implements PassengerService {
         return pageResp;
     }
 
-    @Override
     public void delete(Long id) {
         passengerMapper.deleteByPrimaryKey(id);
     }

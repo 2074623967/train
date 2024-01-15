@@ -1,5 +1,6 @@
 package com.muke.gen;
 
+import com.muke.util.FreemarkerUtil;
 import freemarker.template.TemplateException;
 import org.dom4j.Document;
 import org.dom4j.DocumentException;
@@ -9,6 +10,7 @@ import org.dom4j.io.SAXReader;
 import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.Map;
 
 /**
  * 生成器启动类
@@ -18,15 +20,23 @@ import java.util.HashMap;
  **/
 public class ServerGenerator {
 
-    static String toPath="train-generator\\src\\main\\java\\com\\muke\\test\\";
+    static String serverPath = "train-[module]\\src\\main\\java\\com\\muke\\service\\";
     static String pomPath = "train-generator/pom.xml";
+    static String module = "";
 
-    static {
-        new File(toPath).mkdirs();
-    }
+//    static {
+//        new File(serverPath).mkdirs();
+//    }
 
     public static void main(String[] args) throws IOException, TemplateException, DocumentException {
+        // 获取mybatis-generator
         String generatorPath = getGeneratorPath();
+        // 比如generator-config-member.xml，得到module = member
+        module = generatorPath.replace("src/main/resources/generator-config-", "").replace(".xml", "");
+        System.out.println("module: " + module);
+        serverPath = serverPath.replace("[module]", module);
+        new File(serverPath).mkdirs();
+        System.out.println("servicePath: " + serverPath);
 
         // 读取table节点
         Document document = new SAXReader().read("train-generator/" + generatorPath);
@@ -35,6 +45,25 @@ public class ServerGenerator {
         Node tableName = table.selectSingleNode("@tableName");
         Node domainObjectName = table.selectSingleNode("@domainObjectName");
         System.out.println(tableName.getText() + "/" + domainObjectName.getText());
+
+        // 示例：表名 jiawa_test
+        // Domain = JiawaTest
+        String Domain = domainObjectName.getText();
+        // domain = jiawaTest
+        String domain = Domain.substring(0, 1).toLowerCase() + Domain.substring(1);
+        // do_main = jiawa-test
+        String do_main = tableName.getText().replaceAll("_", "-");
+
+        // 组装参数
+        Map<String, Object> param = new HashMap<>();
+        param.put("Domain", Domain);
+        param.put("domain", domain);
+        param.put("do_main", do_main);
+        FreemarkerUtil.initConfig("service.ftl");
+        FreemarkerUtil.generator(serverPath+Domain+"Service.java",param);
+        FreemarkerUtil.initConfig("serviceImpl.ftl");
+        FreemarkerUtil.generator(serverPath+"impl\\"+Domain+"ServiceImpl.java",param);
+
 //        FreemarkerUtil.initConfig("test.ftl");
 //        HashMap<String, Object> param = new HashMap<>();
 //        param.put("domain","Test");
@@ -44,7 +73,7 @@ public class ServerGenerator {
     private static String getGeneratorPath() throws DocumentException {
         SAXReader saxReader = new SAXReader();
         HashMap<String, String> map = new HashMap<>();
-        map.put("pom","http://maven.apache.org/POM/4.0.0");
+        map.put("pom", "http://maven.apache.org/POM/4.0.0");
         saxReader.getDocumentFactory().setXPathNamespaceURIs(map);
         Document document = saxReader.read(pomPath);
         Node node = document.selectSingleNode("//pom:configurationFile");
