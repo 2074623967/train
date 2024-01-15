@@ -24,6 +24,7 @@ public class ServerGenerator {
     static String serverPath = "train-[module]\\src\\main\\java\\com\\muke\\";
     static String pomPath = "train-generator/pom.xml";
     static String module = "";
+    static boolean readOnly = false;
 
 //    static {
 //        new File(serverPath).mkdirs();
@@ -68,12 +69,23 @@ public class ServerGenerator {
         // 获取表相关信息
         String tableNameCn = DbUtil.getTableComment(tableName.getText());
         List<Field> fieldList = DbUtil.getColumnByTableName(tableName.getText());
+        Set<String> typeSet = getJavaTypes(fieldList);
 
         // 组装参数
         Map<String, Object> param = new HashMap<>();
+        param.put("module", module);
         param.put("Domain", Domain);
         param.put("domain", domain);
         param.put("do_main", do_main);
+        param.put("tableNameCn", tableNameCn);
+        param.put("fieldList", fieldList);
+        param.put("typeSet", typeSet);
+        param.put("readOnly", readOnly);
+        System.out.println("组装参数：" + param);
+
+        gen(Domain, param, "req", "saveReq");
+        gen(Domain, param, "req", "queryReq");
+        gen(Domain, param, "resp", "queryResp");
         gen(Domain, param, "service", "service");
         gen(Domain, param, "service\\impl\\", "serviceImpl");
         gen(Domain, param, "controller", "controller");
@@ -104,5 +116,17 @@ public class ServerGenerator {
         Document document = saxReader.read(pomPath);
         Node node = document.selectSingleNode("//pom:configurationFile");
         return node.getText();
+    }
+
+    /**
+     * 获取所有的Java类型，使用Set去重
+     */
+    private static Set<String> getJavaTypes(List<Field> fieldList) {
+        Set<String> set = new HashSet<>();
+        for (int i = 0; i < fieldList.size(); i++) {
+            Field field = fieldList.get(i);
+            set.add(field.getJavaType());
+        }
+        return set;
     }
 }
