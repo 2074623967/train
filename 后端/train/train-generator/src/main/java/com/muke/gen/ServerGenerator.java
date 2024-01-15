@@ -25,6 +25,7 @@ public class ServerGenerator {
     static String pomPath = "train-generator/pom.xml";
     static String module = "";
     static boolean readOnly = false;
+    static String vuePath = "../../前端/train-web/src/views/main/";
 
 //    static {
 //        new File(serverPath).mkdirs();
@@ -83,12 +84,13 @@ public class ServerGenerator {
         param.put("readOnly", readOnly);
         System.out.println("组装参数：" + param);
 
-        gen(Domain, param, "req", "saveReq");
-        gen(Domain, param, "req", "queryReq");
-        gen(Domain, param, "resp", "queryResp");
-        gen(Domain, param, "service", "service");
-        gen(Domain, param, "service\\impl\\", "serviceImpl");
-        gen(Domain, param, "controller", "controller");
+//        gen(Domain, param, "req", "saveReq");
+//        gen(Domain, param, "req", "queryReq");
+//        gen(Domain, param, "resp", "queryResp");
+//        gen(Domain, param, "service", "service");
+//        gen(Domain, param, "service\\impl\\", "serviceImpl");
+//        gen(Domain, param, "controller", "controller");
+        genVue(do_main, param);
 //        FreemarkerUtil.initConfig("serviceImpl.ftl");
 //        FreemarkerUtil.generator(serverPath+"impl\\"+Domain+"ServiceImpl.java",param);
 
@@ -128,5 +130,13 @@ public class ServerGenerator {
             set.add(field.getJavaType());
         }
         return set;
+    }
+
+    private static void genVue(String do_main, Map<String, Object> param) throws IOException, TemplateException {
+        FreemarkerUtil.initConfig("vue.ftl");
+        new File(vuePath ).mkdirs();
+        String fileName = vuePath + "/" + do_main + ".vue";
+        System.out.println("开始生成：" + fileName);
+        FreemarkerUtil.generator(fileName, param);
     }
 }
