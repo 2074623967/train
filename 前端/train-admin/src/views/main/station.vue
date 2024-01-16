@@ -44,19 +44,20 @@
         <a-input v-model:value="station.name" />
       </a-form-item>
       <a-form-item label="站名拼音">
-        <a-input v-model:value="station.namePinyin" />
+        <a-input v-model:value="station.namePinyin" disabled />
       </a-form-item>
-      <a-form-item label="站名拼音首字母">
-        <a-input v-model:value="station.namePy" />
+      <a-form-item label="拼音首字母">
+        <a-input v-model:value="station.namePy" disabled />
       </a-form-item>
     </a-form>
   </a-modal>
 </template>
 
 <script>
-import { defineComponent, ref, onMounted } from 'vue';
+import { defineComponent, ref, onMounted, watch } from 'vue';
 import { notification } from 'ant-design-vue';
 import axios from 'axios';
+import { pinyin } from 'pinyin-pro';
 
 export default defineComponent({
   name: 'station-view',
@@ -100,45 +101,67 @@ export default defineComponent({
       },
     ];
 
+    watch(
+      () => station.value.name,
+      () => {
+        if (window.Tool.isNotEmpty(station.value.name)) {
+          station.value.namePinyin = pinyin(station.value.name, {
+            toneType: 'none',
+          }).replaceAll(' ', '');
+          station.value.namePy = pinyin(station.value.name, {
+            pattern: 'first',
+            toneType: 'none',
+          }).replaceAll(' ', '');
+        } else {
+          station.value.namePinyin = '';
+          station.value.namePy = '';
+        }
+      },
+      { immediate: true }
+    );
+
     const onAdd = () => {
       station.value = {};
       visible.value = true;
     };
-
     const onEdit = record => {
       station.value = window.Tool.copy(record);
       visible.value = true;
     };
 
     const onDelete = record => {
-      axios.delete('/business/admin/station/delete/' + record.id).then(response => {
-        const data = response.data;
-        if (data.success) {
-          notification.success({ description: '删除成功！' });
-          handleQuery({
-            page: pagination.value.current,
-            size: pagination.value.pageSize,
-          });
-        } else {
-          notification.error({ description: data.message });
-        }
-      });
+      axios
+        .delete('/business/admin/station/delete/' + record.id)
+        .then(response => {
+          const data = response.data;
+          if (data.success) {
+            notification.success({ description: '删除成功！' });
+            handleQuery({
+              page: pagination.value.current,
+              size: pagination.value.pageSize,
+            });
+          } else {
+            notification.error({ description: data.message });
+          }
+        });
     };
 
     const handleOk = () => {
-      axios.post('/business/admin/station/save', station.value).then(response => {
-        const data = response.data;
-        if (data.success) {
-          notification.success({ description: '保存成功！' });
-          visible.value = false;
-          handleQuery({
-            page: pagination.value.current,
-            size: pagination.value.pageSize,
-          });
-        } else {
-          notification.error({ description: data.message });
-        }
-      });
+      axios
+        .post('/business/admin/station/save', station.value)
+        .then(response => {
+          const data = response.data;
+          if (data.success) {
+            notification.success({ description: '保存成功！' });
+            visible.value = false;
+            handleQuery({
+              page: pagination.value.current,
+              size: pagination.value.pageSize,
+            });
+          } else {
+            notification.error({ description: data.message });
+          }
+        });
     };
 
     const handleQuery = param => {
