@@ -13,6 +13,7 @@ import com.muke.mapper.${Domain}Mapper;
 import com.muke.req.${Domain}QueryReq;
 import com.muke.req.${Domain}SaveReq;
 import com.muke.resp.${Domain}QueryResp;
+import com.muke.service.${Domain}Service;
 import jakarta.annotation.Resource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

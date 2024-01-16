@@ -2,6 +2,7 @@ package com.muke.gen;
 
 import cn.hutool.core.util.StrUtil;
 import com.muke.enums.PassengerTypeEnum;
+import com.muke.enums.TrainTypeEnum;
 
 import java.io.FileOutputStream;
 import java.io.OutputStreamWriter;
@@ -28,6 +29,7 @@ public class EnumGenerator {
         long begin = System.currentTimeMillis();
         try {
             toJson(PassengerTypeEnum.class, bufferObject, bufferArray);
+            toJson(TrainTypeEnum.class, bufferObject, bufferArray);
 
             StringBuffer buffer = bufferObject.append("\r\n").append(bufferArray);
             writeJs(buffer);
