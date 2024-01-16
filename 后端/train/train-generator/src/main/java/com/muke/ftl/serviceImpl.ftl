@@ -23,7 +23,7 @@ import java.util.List;
 @Service
 public class ${Domain}ServiceImpl implements ${Domain}Service{
 
-    private static final Logger LOG = LoggerFactory.getLogger(${Domain}Service.class);
+    private static final Logger LOG = LoggerFactory.getLogger(${Domain}ServiceImpl.class);
 
     @Resource
     private ${Domain}Mapper ${domain}Mapper;
