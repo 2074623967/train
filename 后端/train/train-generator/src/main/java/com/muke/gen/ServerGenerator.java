@@ -89,7 +89,7 @@ public class ServerGenerator {
 //        gen(Domain, param, "resp", "queryResp");
 //        gen(Domain, param, "service", "service");
 //        gen(Domain, param, "service\\impl\\", "serviceImpl");
-//        gen(Domain, param, "controller", "controller");
+//        gen(Domain, param, "controller\\admin", "adminController");
         genVue(do_main, param);
 //        FreemarkerUtil.initConfig("serviceImpl.ftl");
 //        FreemarkerUtil.generator(serverPath+"impl\\"+Domain+"ServiceImpl.java",param);

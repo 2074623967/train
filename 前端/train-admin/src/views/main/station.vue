@@ -5,18 +5,22 @@
       <a-button type="primary" @click="onAdd">新增</a-button>
     </a-space>
   </div>
-  <a-table :dataSource="stations"
-           :columns="columns"
-           :pagination="pagination"
-           @change="handleTableChange"
-           :loading="loading">
+  <a-table
+    :dataSource="stations"
+    :columns="columns"
+    :pagination="pagination"
+    @change="handleTableChange"
+    :loading="loading"
+  >
     <template #bodyCell="{ column, record }">
       <template v-if="column.dataIndex === 'operation'">
         <a-space>
           <a-popconfirm
-              title="删除后不可恢复，确认删除?"
-              @confirm="onDelete(record)"
-              ok-text="确认" cancel-text="取消">
+            title="删除后不可恢复，确认删除?"
+            @confirm="onDelete(record)"
+            ok-text="确认"
+            cancel-text="取消"
+          >
             <a style="color: red">删除</a>
           </a-popconfirm>
           <a @click="onEdit(record)">编辑</a>
@@ -24,9 +28,18 @@
       </template>
     </template>
   </a-table>
-  <a-modal v-model:visible="visible" title="车站" @ok="handleOk"
-           ok-text="确认" cancel-text="取消">
-    <a-form :model="station" :label-col="{span: 4}" :wrapper-col="{ span: 20 }">
+  <a-modal
+    v-model:visible="visible"
+    title="车站"
+    @ok="handleOk"
+    ok-text="确认"
+    cancel-text="取消"
+  >
+    <a-form
+      :model="station"
+      :label-col="{ span: 4 }"
+      :wrapper-col="{ span: 20 }"
+    >
       <a-form-item label="站名">
         <a-input v-model:value="station.name" />
       </a-form-item>
@@ -42,14 +55,14 @@
 
 <script>
 import { defineComponent, ref, onMounted } from 'vue';
-import {notification} from "ant-design-vue";
-import axios from "axios";
+import { notification } from 'ant-design-vue';
+import axios from 'axios';
 
 export default defineComponent({
-  name: "station-view",
+  name: 'station-view',
   setup() {
     const visible = ref(false);
-    let station = ref({
+    const station = ref({
       id: undefined,
       name: undefined,
       namePinyin: undefined,
@@ -64,27 +77,27 @@ export default defineComponent({
       current: 1,
       pageSize: 10,
     });
-    let loading = ref(false);
+    const loading = ref(false);
     const columns = [
-    {
-      title: '站名',
-      dataIndex: 'name',
-      key: 'name',
-    },
-    {
-      title: '站名拼音',
-      dataIndex: 'namePinyin',
-      key: 'namePinyin',
-    },
-    {
-      title: '站名拼音首字母',
-      dataIndex: 'namePy',
-      key: 'namePy',
-    },
-    {
-      title: '操作',
-      dataIndex: 'operation'
-    }
+      {
+        title: '站名',
+        dataIndex: 'name',
+        key: 'name',
+      },
+      {
+        title: '站名拼音',
+        dataIndex: 'namePinyin',
+        key: 'namePinyin',
+      },
+      {
+        title: '站名拼音首字母',
+        dataIndex: 'namePy',
+        key: 'namePy',
+      },
+      {
+        title: '操作',
+        dataIndex: 'operation',
+      },
     ];
 
     const onAdd = () => {
@@ -92,82 +105,84 @@ export default defineComponent({
       visible.value = true;
     };
 
-    const onEdit = (record) => {
+    const onEdit = record => {
       station.value = window.Tool.copy(record);
       visible.value = true;
     };
 
-    const onDelete = (record) => {
-      axios.delete("/business/station/delete/" + record.id).then((response) => {
+    const onDelete = record => {
+      axios.delete('/business/admin/station/delete/' + record.id).then(response => {
         const data = response.data;
         if (data.success) {
-          notification.success({description: "删除成功！"});
+          notification.success({ description: '删除成功！' });
           handleQuery({
             page: pagination.value.current,
             size: pagination.value.pageSize,
           });
         } else {
-          notification.error({description: data.message});
+          notification.error({ description: data.message });
         }
       });
     };
 
     const handleOk = () => {
-      axios.post("/business/station/save", station.value).then((response) => {
-        let data = response.data;
+      axios.post('/business/admin/station/save', station.value).then(response => {
+        const data = response.data;
         if (data.success) {
-          notification.success({description: "保存成功！"});
+          notification.success({ description: '保存成功！' });
           visible.value = false;
           handleQuery({
             page: pagination.value.current,
-            size: pagination.value.pageSize
+            size: pagination.value.pageSize,
           });
         } else {
-          notification.error({description: data.message});
+          notification.error({ description: data.message });
         }
       });
     };
 
-    const handleQuery = (param) => {
+    const handleQuery = param => {
       if (!param) {
         param = {
           page: 1,
-          size: pagination.value.pageSize
+          size: pagination.value.pageSize,
         };
       }
       loading.value = true;
-      axios.get("/business/station/query-list", {
-        params: {
-          page: param.page,
-          size: param.size
-        }
-      }).then((response) => {
-        loading.value = false;
-        let data = response.data;
-        if (data.success) {
-          stations.value = data.content.list;
-          // 设置分页控件的值
-          pagination.value.current = param.page;
-          pagination.value.total = data.content.total;
-        } else {
-          notification.error({description: data.message});
-        }
-      });
+      axios
+        .get('/business/admin/station/query-list', {
+          params: {
+            page: param.page,
+            size: param.size,
+          },
+        })
+        .then(response => {
+          loading.value = false;
+          const data = response.data;
+          if (data.success) {
+            stations.value = data.content.list;
+            // 设置分页控件的值
+            pagination.value.current = param.page;
+            pagination.value.total = data.content.total;
+          } else {
+            notification.error({ description: data.message });
+          }
+        });
     };
 
-    const handleTableChange = (page) => {
+    const handleTableChange = page => {
       // console.log("看看自带的分页参数都有啥：" + JSON.stringify(page));
       pagination.value.pageSize = page.pageSize;
       handleQuery({
         page: page.current,
-        size: page.pageSize
+        size: page.pageSize,
       });
     };
 
     onMounted(() => {
       handleQuery({
         page: 1,
-        size: pagination.value.pageSize
+        size: pagination.value.pageSize,
       });
     });
 
@@ -183,13 +198,13 @@ export default defineComponent({
       onAdd,
       handleOk,
       onEdit,
-      onDelete
+      onDelete,
     };
   },
 });
 </script>
 <style lang="less" scoped>
-  .operateButton {
-    display: flex;
-  }
+.operateButton {
+  display: flex;
+}
 </style>

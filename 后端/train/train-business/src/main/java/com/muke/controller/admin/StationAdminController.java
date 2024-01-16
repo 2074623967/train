@@ -1,10 +1,9 @@
-package com.muke.controller;
+package com.muke.controller.admin;
 
-import com.muke.context.LoginMemberContext;
-import com.muke.resp.CommonResp;
-import com.muke.resp.PageResp;
 import com.muke.req.StationQueryReq;
 import com.muke.req.StationSaveReq;
+import com.muke.resp.CommonResp;
+import com.muke.resp.PageResp;
 import com.muke.resp.StationQueryResp;
 import com.muke.service.StationService;
 import jakarta.annotation.Resource;
@@ -12,8 +11,8 @@ import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/station")
-public class StationController {
+@RequestMapping("/admin/station")
+public class StationAdminController {
 
     @Resource
     private StationService stationService;
