@@ -5,15 +5,16 @@ import cn.hutool.core.date.DateTime;
 import cn.hutool.core.util.ObjectUtil;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
-import com.muke.resp.PageResp;
-import com.muke.util.SnowUtil;
 import com.muke.domain.TrainCarriage;
 import com.muke.domain.TrainCarriageExample;
+import com.muke.enums.SeatColEnum;
 import com.muke.mapper.TrainCarriageMapper;
 import com.muke.req.TrainCarriageQueryReq;
 import com.muke.req.TrainCarriageSaveReq;
+import com.muke.resp.PageResp;
 import com.muke.resp.TrainCarriageQueryResp;
 import com.muke.service.TrainCarriageService;
+import com.muke.util.SnowUtil;
 import jakarta.annotation.Resource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,6 +32,12 @@ public class TrainCarriageServiceImpl implements TrainCarriageService{
 
     public void save(TrainCarriageSaveReq req) {
         DateTime now = DateTime.now();
+
+        // 自动计算出列数和总座位数
+        List<SeatColEnum> seatColEnums = SeatColEnum.getColsByType(req.getSeatType());
+        req.setColCount(seatColEnums.size());
+        req.setSeatCount(req.getColCount() * req.getRowCount());
+
         TrainCarriage trainCarriage = BeanUtil.copyProperties(req, TrainCarriage.class);
         if (ObjectUtil.isNull(trainCarriage.getId())) {
             trainCarriage.setId(SnowUtil.getSnowflakeNextId());
