@@ -5,6 +5,7 @@ import com.muke.req.TrainSaveReq;
 import com.muke.resp.CommonResp;
 import com.muke.resp.PageResp;
 import com.muke.resp.TrainQueryResp;
+import com.muke.service.TrainSeatService;
 import com.muke.service.TrainService;
 import jakarta.annotation.Resource;
 import jakarta.validation.Valid;
@@ -18,6 +19,9 @@ public class TrainAdminController {
 
     @Resource
     private TrainService trainService;
+
+    @Resource
+    private TrainSeatService trainSeatService;
 
     @PostMapping("/save")
     public CommonResp<Object> save(@Valid @RequestBody TrainSaveReq req) {
@@ -43,4 +47,9 @@ public class TrainAdminController {
         return new CommonResp<>(list);
     }
 
+    @GetMapping("/gen-seat/{trainCode}")
+    public CommonResp<Object> genSeat(@PathVariable String trainCode) {
+        trainSeatService.genTrainSeat(trainCode);
+        return new CommonResp<>();
+    }
 }
