@@ -6,6 +6,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.cloud.openfeign.EnableFeignClients;
 import org.springframework.core.env.ConfigurableEnvironment;
 
 /**
@@ -16,6 +17,7 @@ import org.springframework.core.env.ConfigurableEnvironment;
  **/
 @SpringBootApplication(scanBasePackages = {"com.muke"})
 @MapperScan(basePackages = {"com.muke.mapper"})
+@EnableFeignClients("com.muke.feign")
 public class BatchApplication {
 
     private static final Logger LOG = LoggerFactory.getLogger(BatchApplication.class);

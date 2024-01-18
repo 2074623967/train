@@ -4,3 +4,6 @@ server:
     context-path: /batch
 mybatis:
   mapper-locations: classpath:/mapper/**/*.xml
+spring:
+  application:
+    name: batch

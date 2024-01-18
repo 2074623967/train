@@ -1,6 +1,8 @@
 package com.muke.job;
 
 import cn.hutool.core.util.RandomUtil;
+import com.muke.feign.BusinessFeign;
+import jakarta.annotation.Resource;
 import org.quartz.DisallowConcurrentExecution;
 import org.quartz.Job;
 import org.quartz.JobExecutionContext;
@@ -20,10 +22,13 @@ public class DailyTrainJob implements Job {
 
     private static final Logger LOG = LoggerFactory.getLogger(DailyTrainJob.class);
 
+    @Resource
+    private  BusinessFeign businessFeign;
+
     @Override
     public void execute(JobExecutionContext jobExecutionContext) throws JobExecutionException {
         // 增加日志流水号
         MDC.put("LOG_ID", System.currentTimeMillis() + RandomUtil.randomString(3));
-        LOG.info("生成车次数据开始");
+        LOG.info("生成15天后的车次数据开始");
     }
 }
