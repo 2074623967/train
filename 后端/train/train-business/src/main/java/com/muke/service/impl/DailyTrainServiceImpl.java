@@ -15,6 +15,7 @@ import com.muke.req.DailyTrainQueryReq;
 import com.muke.req.DailyTrainSaveReq;
 import com.muke.resp.DailyTrainQueryResp;
 import com.muke.resp.PageResp;
+import com.muke.service.DailyTrainCarriageService;
 import com.muke.service.DailyTrainService;
 import com.muke.service.DailyTrainStationService;
 import com.muke.service.TrainService;
@@ -41,6 +42,9 @@ public class DailyTrainServiceImpl implements DailyTrainService {
 
     @Resource
     private DailyTrainStationService dailyTrainStationService;
+
+    @Resource
+    private DailyTrainCarriageService dailyTrainCarriageService;
 
     public void save(DailyTrainSaveReq req) {
         DateTime now = DateTime.now();
@@ -128,5 +132,8 @@ public class DailyTrainServiceImpl implements DailyTrainService {
 
         // 生成该车次的车站数据
         dailyTrainStationService.genDaily(date, train.getCode());
+
+        // 生成该车次的车厢数据
+        dailyTrainCarriageService.genDaily(date, train.getCode());
     }
 }

@@ -5,6 +5,8 @@ import com.muke.resp.PageResp;
 import com.muke.resp.DailyTrainCarriageQueryResp;
 import com.muke.req.DailyTrainCarriageQueryReq;
 
+import java.util.Date;
+
 public interface  DailyTrainCarriageService {
 
     void save(DailyTrainCarriageSaveReq req);
@@ -12,4 +14,6 @@ public interface  DailyTrainCarriageService {
     PageResp<DailyTrainCarriageQueryResp> queryList(DailyTrainCarriageQueryReq req);
 
     void delete(Long id);
+
+    void genDaily(Date date, String code);
 }
