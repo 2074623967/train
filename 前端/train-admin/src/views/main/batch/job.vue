@@ -1,7 +1,9 @@
 <template>
-  <div class="job operateButton">
-    <a-button type="primary" @click="handleAdd()"> 新增 </a-button>&nbsp;
-    <a-button type="primary" @click="handleQuery()"> 刷新 </a-button>
+  <div class="job">
+    <div class="operateButton">
+      <a-button type="primary" @click="handleAdd()"> 新增 </a-button>&nbsp;
+      <a-button type="primary" @click="handleQuery()"> 刷新 </a-button>
+    </div>
     <a-table :dataSource="jobs" :columns="columns" :loading="loading">
       <template #bodyCell="{ column, record }">
         <template v-if="column.dataIndex === 'operation'">
