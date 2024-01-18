@@ -16,6 +16,7 @@ import com.muke.req.DailyTrainSaveReq;
 import com.muke.resp.DailyTrainQueryResp;
 import com.muke.resp.PageResp;
 import com.muke.service.DailyTrainService;
+import com.muke.service.DailyTrainStationService;
 import com.muke.service.TrainService;
 import com.muke.util.SnowUtil;
 import jakarta.annotation.Resource;
@@ -37,6 +38,9 @@ public class DailyTrainServiceImpl implements DailyTrainService {
 
     @Resource
     private TrainService trainService;
+
+    @Resource
+    private DailyTrainStationService dailyTrainStationService;
 
     public void save(DailyTrainSaveReq req) {
         DateTime now = DateTime.now();
@@ -121,5 +125,8 @@ public class DailyTrainServiceImpl implements DailyTrainService {
         dailyTrain.setUpdateTime(now);
         dailyTrain.setDate(date);
         dailyTrainMapper.insert(dailyTrain);
+
+        // 生成该车次的车站数据
+        dailyTrainStationService.genDaily(date, train.getCode());
     }
 }
