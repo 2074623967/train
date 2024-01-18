@@ -1,12 +1,15 @@
 package com.muke.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.date.DateTime;
 import cn.hutool.core.util.ObjectUtil;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.muke.domain.Train;
 import com.muke.domain.TrainExample;
+import com.muke.exception.BusinessException;
+import com.muke.exception.BusinessExceptionEnum;
 import com.muke.mapper.TrainMapper;
 import com.muke.req.TrainQueryReq;
 import com.muke.req.TrainSaveReq;
@@ -33,6 +36,12 @@ public class TrainServiceImpl implements TrainService {
         DateTime now = DateTime.now();
         Train train = BeanUtil.copyProperties(req, Train.class);
         if (ObjectUtil.isNull(train.getId())) {
+            // 保存之前，先校验唯一键是否存在
+            Train trainDB = selectByUnique(req.getCode());
+            if (ObjectUtil.isNotEmpty(trainDB)) {
+                throw new BusinessException(BusinessExceptionEnum.BUSINESS_TRAIN_CODE_UNIQUE_ERROR);
+            }
+
             train.setId(SnowUtil.getSnowflakeNextId());
             train.setCreateTime(now);
             train.setUpdateTime(now);
@@ -40,6 +49,18 @@ public class TrainServiceImpl implements TrainService {
         } else {
             train.setUpdateTime(now);
             trainMapper.updateByPrimaryKey(train);
+        }
+    }
+
+    private Train selectByUnique(String code) {
+        TrainExample trainExample = new TrainExample();
+        trainExample.createCriteria()
+                .andCodeEqualTo(code);
+        List<Train> list = trainMapper.selectByExample(trainExample);
+        if (CollUtil.isNotEmpty(list)) {
+            return list.get(0);
+        } else {
+            return null;
         }
     }
 

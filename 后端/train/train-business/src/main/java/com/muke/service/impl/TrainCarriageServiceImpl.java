@@ -1,6 +1,7 @@
 package com.muke.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.date.DateTime;
 import cn.hutool.core.util.ObjectUtil;
 import com.github.pagehelper.PageHelper;
@@ -8,6 +9,8 @@ import com.github.pagehelper.PageInfo;
 import com.muke.domain.TrainCarriage;
 import com.muke.domain.TrainCarriageExample;
 import com.muke.enums.SeatColEnum;
+import com.muke.exception.BusinessException;
+import com.muke.exception.BusinessExceptionEnum;
 import com.muke.mapper.TrainCarriageMapper;
 import com.muke.req.TrainCarriageQueryReq;
 import com.muke.req.TrainCarriageSaveReq;
@@ -40,6 +43,12 @@ public class TrainCarriageServiceImpl implements TrainCarriageService{
 
         TrainCarriage trainCarriage = BeanUtil.copyProperties(req, TrainCarriage.class);
         if (ObjectUtil.isNull(trainCarriage.getId())) {
+            // 保存之前，先校验唯一键是否存在
+            TrainCarriage trainCarriageDB = selectByUnique(req.getTrainCode(), req.getIndex());
+            if (ObjectUtil.isNotEmpty(trainCarriageDB)) {
+                throw new BusinessException(BusinessExceptionEnum.BUSINESS_TRAIN_CARRIAGE_INDEX_UNIQUE_ERROR);
+            }
+
             trainCarriage.setId(SnowUtil.getSnowflakeNextId());
             trainCarriage.setCreateTime(now);
             trainCarriage.setUpdateTime(now);
@@ -47,6 +56,19 @@ public class TrainCarriageServiceImpl implements TrainCarriageService{
         } else {
             trainCarriage.setUpdateTime(now);
             trainCarriageMapper.updateByPrimaryKey(trainCarriage);
+        }
+    }
+
+    private TrainCarriage selectByUnique(String trainCode, Integer index) {
+        TrainCarriageExample trainCarriageExample = new TrainCarriageExample();
+        trainCarriageExample.createCriteria()
+                .andTrainCodeEqualTo(trainCode)
+                .andIndexEqualTo(index);
+        List<TrainCarriage> list = trainCarriageMapper.selectByExample(trainCarriageExample);
+        if (CollUtil.isNotEmpty(list)) {
+            return list.get(0);
+        } else {
+            return null;
         }
     }
 
