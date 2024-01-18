@@ -1,0 +1,6 @@
+server:
+  port: 8004
+  servlet:
+    context-path: /batch
+mybatis:
+  mapper-locations: classpath:/mapper/**/*.xml
