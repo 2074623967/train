@@ -1,0 +1,201 @@
+<template>
+  <div class="operateButton">
+    <a-space>
+      <train-select-view
+        v-model="params.trainCode"
+        width="200px"
+      ></train-select-view>
+      <a-button type="primary" @click="handleQuery()">刷新</a-button>
+      <a-button type="primary" @click="onAdd">新增</a-button>
+    </a-space>
+  </div>
+  <a-table
+    :dataSource="dailyTrainSeats"
+    :columns="columns"
+    :pagination="pagination"
+    @change="handleTableChange"
+    :loading="loading"
+  >
+    <template #bodyCell="{ column, record }">
+      <template v-if="column.dataIndex === 'operation'">
+        <a-space>
+          <a-popconfirm
+            title="删除后不可恢复，确认删除?"
+            @confirm="onDelete(record)"
+            ok-text="确认"
+            cancel-text="取消"
+          >
+            <a style="color: red">删除</a>
+          </a-popconfirm>
+          <a @click="onEdit(record)">编辑</a>
+        </a-space>
+      </template>
+      <template v-else-if="column.dataIndex === 'col'">
+        <span v-for="item in SEAT_COL_ARRAY" :key="item.code">
+          <span v-if="item.code === record.col">
+            {{ item.desc }}
+          </span>
+        </span>
+      </template>
+      <template v-else-if="column.dataIndex === 'seatType'">
+        <span v-for="item in SEAT_TYPE_ARRAY" :key="item.code">
+          <span v-if="item.code === record.seatType">
+            {{ item.desc }}
+          </span>
+        </span>
+      </template>
+    </template>
+  </a-table>
+</template>
+
+<script>
+import { defineComponent, ref, onMounted } from 'vue';
+import { notification } from 'ant-design-vue';
+import axios from 'axios';
+import TrainSelectView from '@/components/train-select';
+
+export default defineComponent({
+  name: 'daily-train-seat-view',
+  components: { TrainSelectView },
+  setup() {
+    const SEAT_COL_ARRAY = window.SEAT_COL_ARRAY;
+    const SEAT_TYPE_ARRAY = window.SEAT_TYPE_ARRAY;
+    const visible = ref(false);
+    const dailyTrainSeat = ref({
+      id: undefined,
+      date: undefined,
+      trainCode: undefined,
+      carriageIndex: undefined,
+      row: undefined,
+      col: undefined,
+      seatType: undefined,
+      carriageSeatIndex: undefined,
+      sell: undefined,
+      createTime: undefined,
+      updateTime: undefined,
+    });
+    const dailyTrainSeats = ref([]);
+    // 分页的三个属性名是固定的
+    const pagination = ref({
+      total: 0,
+      current: 1,
+      pageSize: 10,
+    });
+    const loading = ref(false);
+    const params = ref({
+      trainCode: null,
+    });
+    const columns = [
+      {
+        title: '日期',
+        dataIndex: 'date',
+        key: 'date',
+      },
+      {
+        title: '车次编号',
+        dataIndex: 'trainCode',
+        key: 'trainCode',
+      },
+      {
+        title: '箱序',
+        dataIndex: 'carriageIndex',
+        key: 'carriageIndex',
+      },
+      {
+        title: '排号',
+        dataIndex: 'row',
+        key: 'row',
+      },
+      {
+        title: '列号',
+        dataIndex: 'col',
+        key: 'col',
+      },
+      {
+        title: '座位类型',
+        dataIndex: 'seatType',
+        key: 'seatType',
+      },
+      {
+        title: '同车箱座序',
+        dataIndex: 'carriageSeatIndex',
+        key: 'carriageSeatIndex',
+      },
+      {
+        title: '售卖情况',
+        dataIndex: 'sell',
+        key: 'sell',
+      },
+      {
+        title: '操作',
+        dataIndex: 'operation',
+      },
+    ];
+
+    const handleQuery = param => {
+      if (!param) {
+        param = {
+          page: 1,
+          size: pagination.value.pageSize,
+        };
+      }
+      loading.value = true;
+      axios
+        .get('/business/admin/daily-train-seat/query-list', {
+          params: {
+            page: param.page,
+            size: param.size,
+            trainCode: params.value.trainCode,
+          },
+        })
+        .then(response => {
+          loading.value = false;
+          const data = response.data;
+          if (data.success) {
+            dailyTrainSeats.value = data.content.list;
+            // 设置分页控件的值
+            pagination.value.current = param.page;
+            pagination.value.total = data.content.total;
+          } else {
+            notification.error({ description: data.message });
+          }
+        });
+    };
+
+    const handleTableChange = page => {
+      // console.log("看看自带的分页参数都有啥：" + JSON.stringify(page));
+      pagination.value.pageSize = page.pageSize;
+      handleQuery({
+        page: page.current,
+        size: page.pageSize,
+      });
+    };
+
+    onMounted(() => {
+      handleQuery({
+        page: 1,
+        size: pagination.value.pageSize,
+      });
+    });
+
+    return {
+      SEAT_COL_ARRAY,
+      SEAT_TYPE_ARRAY,
+      dailyTrainSeat,
+      visible,
+      dailyTrainSeats,
+      pagination,
+      columns,
+      handleTableChange,
+      handleQuery,
+      loading,
+      params,
+    };
+  },
+});
+</script>
+<style lang="less" scoped>
+.operateButton {
+  display: flex;
+}
+</style>
