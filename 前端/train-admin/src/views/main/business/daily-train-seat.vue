@@ -16,20 +16,7 @@
     :loading="loading"
   >
     <template #bodyCell="{ column, record }">
-      <template v-if="column.dataIndex === 'operation'">
-        <a-space>
-          <a-popconfirm
-            title="删除后不可恢复，确认删除?"
-            @confirm="onDelete(record)"
-            ok-text="确认"
-            cancel-text="取消"
-          >
-            <a style="color: red">删除</a>
-          </a-popconfirm>
-          <a @click="onEdit(record)">编辑</a>
-        </a-space>
-      </template>
-      <template v-else-if="column.dataIndex === 'col'">
+      <template v-if="column.dataIndex === 'col'">
         <span v-for="item in SEAT_COL_ARRAY" :key="item.code">
           <span
             v-if="item.code === record.col && item.type === record.seatType"
@@ -126,10 +113,6 @@ export default defineComponent({
         title: '售卖情况',
         dataIndex: 'sell',
         key: 'sell',
-      },
-      {
-        title: '操作',
-        dataIndex: 'operation',
       },
     ];
 
