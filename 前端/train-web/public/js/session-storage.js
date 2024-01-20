@@ -1,3 +1,7 @@
+// 所有的session key都在这里统一定义，可以避免多个功能使用同一个key
+const SESSION_ORDER = 'SESSION_ORDER';
+const SESSION_TICKET_PARAMS = 'SESSION_TICKET_PARAMS';
+
 const SessionStorage = {
   get: function (key) {
     const v = sessionStorage.getItem(key);
@@ -16,4 +20,6 @@ const SessionStorage = {
   },
 };
 
+window.SESSION_ORDER = SESSION_ORDER;
+window.SESSION_TICKET_PARAMS = SESSION_TICKET_PARAMS;
 window.SessionStorage = SessionStorage;

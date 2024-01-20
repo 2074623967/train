@@ -195,6 +195,10 @@ export default defineComponent({
           size: pagination.value.pageSize,
         };
       }
+
+      // 保存查询参数
+      window.SessionStorage.set(window.SESSION_TICKET_PARAMS, params.value);
+
       loading.value = true;
       axios
         .get('/business/daily-train-ticket/query-list', {
@@ -245,10 +249,15 @@ export default defineComponent({
     };
 
     onMounted(() => {
-      // handleQuery({
-      //   page: 1,
-      //   size: pagination.value.pageSize,
-      // });
+      //  "|| {}"是常用技巧，可以避免空指针异常
+      params.value =
+        window.SessionStorage.get(window.SESSION_TICKET_PARAMS) || {};
+      if (window.Tool.isNotEmpty(params.value)) {
+        handleQuery({
+          page: 1,
+          size: pagination.value.pageSize,
+        });
+      }
     });
 
     return {
