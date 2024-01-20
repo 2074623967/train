@@ -5,7 +5,7 @@
     allowClear
     :filterOption="filterNameOption"
     @change="onChange"
-    placeholder="请选择车站"
+    :placeholder="defaultTip"
     :style="'width: ' + localWidth"
   >
     <a-select-option
@@ -20,13 +20,13 @@
 </template>
 
 <script>
-import { defineComponent, onMounted, ref, watch } from 'vue';
+import { defineComponent, onMounted, ref, watch, computed } from 'vue';
 import axios from 'axios';
 import { notification } from 'ant-design-vue';
 
 export default defineComponent({
   name: 'station-select-view',
-  props: ['modelValue', 'width'],
+  props: ['modelValue', 'width', 'placeholder'],
   emits: ['update:modelValue', 'change'],
   setup(props, { emit }) {
     const name = ref();
@@ -45,6 +45,10 @@ export default defineComponent({
       },
       { immediate: true }
     );
+
+    const defaultTip = computed(() => {
+      return props.placeholder ? props.placeholder : '请选择车站';
+    });
 
     /**
      * 查询所有的车站，用于车站下拉框
@@ -91,6 +95,7 @@ export default defineComponent({
       filterNameOption,
       onChange,
       localWidth,
+      defaultTip,
     };
   },
 });
