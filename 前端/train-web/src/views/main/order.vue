@@ -11,6 +11,14 @@
     >站
     <span class="order-train-main">({{ dailyTrainTicket.endTime }})</span>&nbsp;
   </div>
+  <div class="order-train-ticket">
+    <span v-for="item in seatTypes" :key="item.type">
+      <span>{{ item.desc }}</span
+      >： <span class="order-train-ticket-main">{{ item.price }}￥</span>&nbsp;
+      <span class="order-train-ticket-main">{{ item.count }}</span
+      >&nbsp;张票&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    </span>
+  </div>
 </template>
 
 <script>
@@ -21,8 +29,35 @@ export default defineComponent({
     const dailyTrainTicket =
       window.SessionStorage.get(window.SESSION_ORDER) || {};
     console.log('下单的车次信息', dailyTrainTicket);
+
+    const SEAT_TYPE = window.SEAT_TYPE;
+    console.log(SEAT_TYPE);
+    // 本车次提供的座位类型seatTypes，含票价，余票等信息，例：
+    // {
+    //   type: "YDZ",
+    //   code: "1",
+    //   desc: "一等座",
+    //   count: "100",
+    //   price: "50",
+    // }
+    // 关于SEAT_TYPE[KEY]：当知道某个具体的属性xxx时，可以用obj.xxx，当属性名是个变量时，可以使用obj[xxx]
+    const seatTypes = [];
+    for (const KEY in SEAT_TYPE) {
+      const key = KEY.toLowerCase();
+      if (dailyTrainTicket[key] >= 0) {
+        seatTypes.push({
+          type: KEY,
+          code: SEAT_TYPE[KEY].code,
+          desc: SEAT_TYPE[KEY].desc,
+          count: dailyTrainTicket[key],
+          price: dailyTrainTicket[key + 'Price'],
+        });
+      }
+    }
+    console.log('本车次提供的座位：', seatTypes);
     return {
       dailyTrainTicket,
+      seatTypes,
     };
   },
 });
@@ -32,5 +67,12 @@ export default defineComponent({
 .order-train .order-train-main {
   font-size: 18px;
   font-weight: bold;
+}
+.order-train .order-train-ticket {
+  margin-top: 15px;
+}
+.order-train .order-train-ticket .order-train-ticket-main {
+  color: red;
+  font-size: 18px;
 }
 </style>
