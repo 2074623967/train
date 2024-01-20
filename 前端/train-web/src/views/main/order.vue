@@ -27,21 +27,59 @@
     v-model:value="passengerChecks"
     :options="passengerOptions"
   />
+  <div class="order-tickets">
+    <a-row class="order-tickets-header" v-if="tickets.length > 0">
+      <a-col :span="2">乘客</a-col>
+      <a-col :span="6">身份证</a-col>
+      <a-col :span="4">票种</a-col>
+      <a-col :span="4">座位类型</a-col>
+    </a-row>
+    <a-row
+      class="order-tickets-row"
+      v-for="ticket in tickets"
+      :key="ticket.passengerId"
+    >
+      <a-col :span="2">{{ ticket.passengerName }}</a-col>
+      <a-col :span="6">{{ ticket.passengerIdCard }}</a-col>
+      <a-col :span="4">
+        <a-select v-model:value="ticket.passengerType" style="width: 100%">
+          <a-select-option
+            v-for="item in PASSENGER_TYPE_ARRAY"
+            :key="item.code"
+            :value="item.code"
+          >
+            {{ item.desc }}
+          </a-select-option>
+        </a-select>
+      </a-col>
+      <a-col :span="4">
+        <a-select v-model:value="ticket.seatTypeCode" style="width: 100%">
+          <a-select-option
+            v-for="item in seatTypes"
+            :key="item.code"
+            :value="item.code"
+          >
+            {{ item.desc }}
+          </a-select-option>
+        </a-select>
+      </a-col>
+    </a-row>
+  </div>
 </template>
 
 <script>
-import { defineComponent, onMounted, ref } from 'vue';
+import { defineComponent, onMounted, ref, watch } from 'vue';
 import axios from 'axios';
 import { notification } from 'ant-design-vue';
 export default defineComponent({
   name: 'order-view',
   setup() {
-    const passengers = ref([]);
-    const passengerOptions = ref([]);
-    const passengerChecks = ref([]);
     const dailyTrainTicket =
       window.SessionStorage.get(window.SESSION_ORDER) || {};
     console.log('下单的车次信息', dailyTrainTicket);
+    const passengers = ref([]);
+    const passengerOptions = ref([]);
+    const passengerChecks = ref([]);
 
     const SEAT_TYPE = window.SEAT_TYPE;
     console.log(SEAT_TYPE);
@@ -68,6 +106,37 @@ export default defineComponent({
       }
     }
     console.log('本车次提供的座位：', seatTypes);
+
+    // 购票列表，用于界面展示，并传递到后端接口，用来描述：哪个乘客购买什么座位的票
+    // {
+    //   passengerId: 123,
+    //   passengerType: "1",
+    //   passengerName: "张三",
+    //   passengerIdCard: "12323132132",
+    //   seatTypeCode: "1",
+    //   seat: "C1"
+    // }
+    const tickets = ref([]);
+
+    // 勾选或去掉某个乘客时，在购票列表中加上或去掉一张表
+    watch(
+      () => passengerChecks.value,
+      (newVal, oldVal) => {
+        console.log('勾选乘客发生变化', newVal, oldVal);
+        // 每次有变化时，把购票列表清空，重新构造列表
+        tickets.value = [];
+        passengerChecks.value.forEach(item =>
+          tickets.value.push({
+            passengerId: item.id,
+            passengerType: item.type,
+            seatTypeCode: seatTypes[0].code,
+            passengerName: item.name,
+            passengerIdCard: item.idCard,
+          })
+        );
+      },
+      { immediate: true }
+    );
 
     const handleQueryPassenger = () => {
       axios.get('/member/passenger/query-mine').then(response => {
@@ -97,6 +166,7 @@ export default defineComponent({
       handleQueryPassenger,
       passengerOptions,
       passengerChecks,
+      tickets,
     };
   },
 });
@@ -113,5 +183,29 @@ export default defineComponent({
 .order-train .order-train-ticket .order-train-ticket-main {
   color: red;
   font-size: 18px;
+}
+
+.order-tickets {
+  margin: 10px 0;
+}
+.order-tickets .ant-col {
+  padding: 5px 10px;
+}
+.order-tickets .order-tickets-header {
+  background-color: cornflowerblue;
+  border: solid 1px cornflowerblue;
+  color: white;
+  font-size: 16px;
+  padding: 5px 0;
+}
+.order-tickets .order-tickets-row {
+  border: solid 1px cornflowerblue;
+  border-top: none;
+  vertical-align: middle;
+  line-height: 30px;
+}
+
+.order-tickets .choose-seat-item {
+  margin: 5px 5px;
 }
 </style>
