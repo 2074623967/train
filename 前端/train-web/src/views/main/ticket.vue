@@ -27,7 +27,9 @@
     :loading="loading"
   >
     <template #bodyCell="{ column, record }">
-      <template v-if="column.dataIndex === 'operation'"> </template>
+      <template v-if="column.dataIndex === 'operation'">
+        <a-button type="primary" @click="toOrder(record)">预订</a-button>
+      </template>
       <template v-else-if="column.dataIndex === 'station'">
         {{ record.start }}<br />
         {{ record.end }}
@@ -86,11 +88,35 @@ import { notification } from 'ant-design-vue';
 import axios from 'axios';
 import StationSelectView from '@/components/station-select';
 import dayjs from 'dayjs';
+import router from '@/router';
 
 export default defineComponent({
   name: 'ticket-view',
   components: { StationSelectView },
   setup() {
+    const dailyTrainTicket = ref({
+      id: undefined,
+      date: undefined,
+      trainCode: undefined,
+      start: undefined,
+      startPinyin: undefined,
+      startTime: undefined,
+      startIndex: undefined,
+      end: undefined,
+      endPinyin: undefined,
+      endTime: undefined,
+      endIndex: undefined,
+      ydz: undefined,
+      ydzPrice: undefined,
+      edz: undefined,
+      edzPrice: undefined,
+      rw: undefined,
+      rwPrice: undefined,
+      yw: undefined,
+      ywPrice: undefined,
+      createTime: undefined,
+      updateTime: undefined,
+    });
     const dailyTrainTickets = ref([]);
     // 分页的三个属性名是固定的
     const pagination = ref({
@@ -142,6 +168,11 @@ export default defineComponent({
         title: '硬卧',
         dataIndex: 'yw',
         key: 'yw',
+      },
+      {
+        title: '操作',
+        dataIndex: 'operation',
+        key: 'operation',
       },
     ];
 
@@ -207,6 +238,12 @@ export default defineComponent({
       return dayjs('00:00:00', 'HH:mm:ss').second(diff).format('HH:mm:ss');
     };
 
+    const toOrder = record => {
+      dailyTrainTicket.value = window.Tool.copy(record);
+      window.SessionStorage.set(window.SESSION_ORDER, dailyTrainTicket.value);
+      router.push('/order');
+    };
+
     onMounted(() => {
       // handleQuery({
       //   page: 1,
@@ -223,6 +260,7 @@ export default defineComponent({
       loading,
       params,
       calDuration,
+      toOrder,
     };
   },
 });
