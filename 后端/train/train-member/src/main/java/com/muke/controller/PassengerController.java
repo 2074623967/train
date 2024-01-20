@@ -1,15 +1,17 @@
 package com.muke.controller;
 
+import com.muke.context.LoginMemberContext;
 import com.muke.req.PassengerQueryReq;
 import com.muke.req.PassengerSaveReq;
 import com.muke.resp.CommonResp;
 import com.muke.resp.PageResp;
 import com.muke.resp.PassengerQueryResp;
 import com.muke.service.PassengerService;
-import com.muke.context.LoginMemberContext;
 import jakarta.annotation.Resource;
 import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 /**
  * 乘车人模块
@@ -41,5 +43,11 @@ public class PassengerController {
     public CommonResp<Object> delete(@PathVariable Long id) {
         passengerService.delete(id);
         return new CommonResp<>();
+    }
+
+    @GetMapping("/query-mine")
+    public CommonResp<List<PassengerQueryResp>> queryMine() {
+        List<PassengerQueryResp> list = passengerService.queryMine();
+        return new CommonResp<>(list);
     }
 }
