@@ -148,6 +148,10 @@ export default defineComponent({
         if (data.success) {
           notification.success({ description: '保存成功！' });
           visible.value = false;
+          handleQuery({
+            page: 1,
+            size: pagination.value.pageSize,
+          });
         } else {
           notification.error({ description: data.message });
         }
