@@ -37,6 +37,7 @@ public class PassengerServiceImpl implements PassengerService {
             passenger.setId(SnowUtil.getSnowflakeNextId());
             passenger.setCreateTime(now);
             passenger.setUpdateTime(now);
+            passenger.setMemberId(LoginMemberContext.getId());
             passengerMapper.insert(passenger);
         } else {
             passenger.setUpdateTime(now);
