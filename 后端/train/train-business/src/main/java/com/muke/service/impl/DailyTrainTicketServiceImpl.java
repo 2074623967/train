@@ -4,6 +4,7 @@ import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.date.DateTime;
 import cn.hutool.core.date.DateUtil;
+import cn.hutool.core.util.EnumUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
@@ -11,11 +12,14 @@ import com.muke.domain.DailyTrain;
 import com.muke.domain.DailyTrainTicket;
 import com.muke.domain.DailyTrainTicketExample;
 import com.muke.domain.TrainStation;
+import com.muke.enums.SeatTypeEnum;
+import com.muke.enums.TrainTypeEnum;
 import com.muke.mapper.DailyTrainTicketMapper;
 import com.muke.req.DailyTrainTicketQueryReq;
 import com.muke.req.DailyTrainTicketSaveReq;
 import com.muke.resp.DailyTrainTicketQueryResp;
 import com.muke.resp.PageResp;
+import com.muke.service.DailyTrainSeatService;
 import com.muke.service.DailyTrainTicketService;
 import com.muke.service.TrainStationService;
 import com.muke.util.SnowUtil;
@@ -26,6 +30,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.Date;
 import java.util.List;
 
@@ -39,6 +44,9 @@ public class DailyTrainTicketServiceImpl implements DailyTrainTicketService {
 
     @Resource
     private TrainStationService trainStationService;
+
+    @Resource
+    private DailyTrainSeatService dailyTrainSeatService;
 
     public void save(DailyTrainTicketSaveReq req) {
         DateTime now = DateTime.now();
@@ -102,9 +110,11 @@ public class DailyTrainTicketServiceImpl implements DailyTrainTicketService {
         for (int i = 0; i < stationList.size(); i++) {
             // 得到出发站
             TrainStation trainStationStart = stationList.get(i);
+            BigDecimal sumKM = BigDecimal.ZERO;
             for (int j = (i + 1); j < stationList.size(); j++) {
                 // 得到终点站
                 TrainStation trainStationEnd = stationList.get(j);
+                sumKM = sumKM.add(trainStationEnd.getKm());
 
                 // 构建余票信息
                 DailyTrainTicket dailyTrainTicket = new DailyTrainTicket();
@@ -119,14 +129,26 @@ public class DailyTrainTicketServiceImpl implements DailyTrainTicketService {
                 dailyTrainTicket.setEndPinyin(trainStationEnd.getNamePinyin());
                 dailyTrainTicket.setEndTime(trainStationEnd.getInTime());
                 dailyTrainTicket.setEndIndex(trainStationEnd.getIndex());
-                dailyTrainTicket.setYdz(0);
-                dailyTrainTicket.setYdzPrice(new BigDecimal("0"));
-                dailyTrainTicket.setEdz(0);
-                dailyTrainTicket.setEdzPrice(new BigDecimal("0"));
-                dailyTrainTicket.setRw(0);
-                dailyTrainTicket.setRwPrice(new BigDecimal("0"));
-                dailyTrainTicket.setYw(0);
-                dailyTrainTicket.setYwPrice(new BigDecimal("0"));
+                int ydz = dailyTrainSeatService.countSeat(date, trainCode, SeatTypeEnum.YDZ.getCode());
+                int edz = dailyTrainSeatService.countSeat(date, trainCode, SeatTypeEnum.EDZ.getCode());
+                int rw = dailyTrainSeatService.countSeat(date, trainCode, SeatTypeEnum.RW.getCode());
+                int yw = dailyTrainSeatService.countSeat(date, trainCode, SeatTypeEnum.YW.getCode());
+                // 票价 = 里程之和 * 座位单价 * 车次类型系数
+                String trainType = dailyTrain.getType();
+                // 计算票价系数：TrainTypeEnum.priceRate
+                BigDecimal priceRate = EnumUtil.getFieldBy(TrainTypeEnum::getPriceRate, TrainTypeEnum::getCode, trainType);
+                BigDecimal ydzPrice = sumKM.multiply(SeatTypeEnum.YDZ.getPrice()).multiply(priceRate).setScale(2, RoundingMode.HALF_UP);
+                BigDecimal edzPrice = sumKM.multiply(SeatTypeEnum.EDZ.getPrice()).multiply(priceRate).setScale(2, RoundingMode.HALF_UP);
+                BigDecimal rwPrice = sumKM.multiply(SeatTypeEnum.RW.getPrice()).multiply(priceRate).setScale(2, RoundingMode.HALF_UP);
+                BigDecimal ywPrice = sumKM.multiply(SeatTypeEnum.YW.getPrice()).multiply(priceRate).setScale(2, RoundingMode.HALF_UP);
+                dailyTrainTicket.setYdz(ydz);
+                dailyTrainTicket.setEdz(edz);
+                dailyTrainTicket.setRw(rw);
+                dailyTrainTicket.setYw(yw);
+                dailyTrainTicket.setYdzPrice(ydzPrice);
+                dailyTrainTicket.setEdzPrice(edzPrice);
+                dailyTrainTicket.setRwPrice(rwPrice);
+                dailyTrainTicket.setYwPrice(ywPrice);
                 dailyTrainTicket.setCreateTime(now);
                 dailyTrainTicket.setUpdateTime(now);
                 dailyTrainTicketMapper.insert(dailyTrainTicket);
