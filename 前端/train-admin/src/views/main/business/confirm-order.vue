@@ -2,7 +2,6 @@
   <div class="operateButton">
     <a-space>
       <a-button type="primary" @click="handleQuery()">刷新</a-button>
-      <a-button type="primary" @click="onAdd">新增</a-button>
     </a-space>
   </div>
   <a-table
@@ -13,19 +12,7 @@
     :loading="loading"
   >
     <template #bodyCell="{ column, record }">
-      <template v-if="column.dataIndex === 'operation'">
-        <a-space>
-          <a-popconfirm
-            title="删除后不可恢复，确认删除?"
-            @confirm="onDelete(record)"
-            ok-text="确认"
-            cancel-text="取消"
-          >
-            <a style="color: red">删除</a>
-          </a-popconfirm>
-          <a @click="onEdit(record)">编辑</a>
-        </a-space>
-      </template>
+      <template v-if="column.dataIndex === 'operation'"> </template>
       <template v-else-if="column.dataIndex === 'status'">
         <span v-for="item in CONFIRM_ORDER_STATUS_ARRAY" :key="item.code">
           <span v-if="item.code === record.status">
@@ -96,20 +83,6 @@ export default defineComponent({
   name: 'confirm-order-view',
   setup() {
     const CONFIRM_ORDER_STATUS_ARRAY = window.CONFIRM_ORDER_STATUS_ARRAY;
-    const visible = ref(false);
-    const confirmOrder = ref({
-      id: undefined,
-      memberId: undefined,
-      date: undefined,
-      trainCode: undefined,
-      start: undefined,
-      end: undefined,
-      dailyTrainTicketId: undefined,
-      tickets: undefined,
-      status: undefined,
-      createTime: undefined,
-      updateTime: undefined,
-    });
     const confirmOrders = ref([]);
     // 分页的三个属性名是固定的
     const pagination = ref({
@@ -159,56 +132,7 @@ export default defineComponent({
         dataIndex: 'status',
         key: 'status',
       },
-      {
-        title: '操作',
-        dataIndex: 'operation',
-      },
     ];
-
-    const onAdd = () => {
-      confirmOrder.value = {};
-      visible.value = true;
-    };
-
-    const onEdit = record => {
-      confirmOrder.value = window.Tool.copy(record);
-      visible.value = true;
-    };
-
-    const onDelete = record => {
-      axios
-        .delete('/business/admin/confirm-order/delete/' + record.id)
-        .then(response => {
-          const data = response.data;
-          if (data.success) {
-            notification.success({ description: '删除成功！' });
-            handleQuery({
-              page: pagination.value.current,
-              size: pagination.value.pageSize,
-            });
-          } else {
-            notification.error({ description: data.message });
-          }
-        });
-    };
-
-    const handleOk = () => {
-      axios
-        .post('/business/admin/confirm-order/save', confirmOrder.value)
-        .then(response => {
-          const data = response.data;
-          if (data.success) {
-            notification.success({ description: '保存成功！' });
-            visible.value = false;
-            handleQuery({
-              page: pagination.value.current,
-              size: pagination.value.pageSize,
-            });
-          } else {
-            notification.error({ description: data.message });
-          }
-        });
-    };
 
     const handleQuery = param => {
       if (!param) {
@@ -257,18 +181,12 @@ export default defineComponent({
 
     return {
       CONFIRM_ORDER_STATUS_ARRAY,
-      confirmOrder,
-      visible,
       confirmOrders,
       pagination,
       columns,
       handleTableChange,
       handleQuery,
       loading,
-      onAdd,
-      handleOk,
-      onEdit,
-      onDelete,
     };
   },
 });

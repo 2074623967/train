@@ -1,11 +1,10 @@
 package com.muke.controller.admin;
 
-import com.muke.context.LoginMemberContext;
-import com.muke.resp.CommonResp;
-import com.muke.resp.PageResp;
+import com.muke.req.ConfirmOrderDoReq;
 import com.muke.req.ConfirmOrderQueryReq;
-import com.muke.req.ConfirmOrderSaveReq;
+import com.muke.resp.CommonResp;
 import com.muke.resp.ConfirmOrderQueryResp;
+import com.muke.resp.PageResp;
 import com.muke.service.ConfirmOrderService;
 import jakarta.annotation.Resource;
 import jakarta.validation.Valid;
@@ -19,7 +18,7 @@ public class ConfirmOrderAdminController {
     private ConfirmOrderService confirmOrderService;
 
     @PostMapping("/save")
-    public CommonResp<Object> save(@Valid @RequestBody ConfirmOrderSaveReq req) {
+    public CommonResp<Object> save(@Valid @RequestBody ConfirmOrderDoReq req) {
         confirmOrderService.save(req);
         return new CommonResp<>();
     }
