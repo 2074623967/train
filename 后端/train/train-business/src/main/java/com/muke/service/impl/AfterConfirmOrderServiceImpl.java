@@ -1,9 +1,14 @@
 package com.muke.service.impl;
 
+import com.muke.domain.ConfirmOrder;
 import com.muke.domain.DailyTrainSeat;
 import com.muke.domain.DailyTrainTicket;
+import com.muke.feign.MemberFeign;
 import com.muke.mapper.DailyTrainSeatMapper;
 import com.muke.mapper.cust.DailyTrainTicketMapperCust;
+import com.muke.req.ConfirmOrderTicketReq;
+import com.muke.req.MemberTicketReq;
+import com.muke.resp.CommonResp;
 import com.muke.service.AfterConfirmOrderService;
 import jakarta.annotation.Resource;
 import org.slf4j.Logger;
@@ -31,6 +36,9 @@ public class AfterConfirmOrderServiceImpl implements AfterConfirmOrderService {
     @Resource
     private DailyTrainTicketMapperCust dailyTrainTicketMapperCust;
 
+    @Resource
+    private MemberFeign memberFeign;
+
     /**
      * 选中座位后事务处理:
      * 座位表修改售卖情况sell:
@@ -43,8 +51,10 @@ public class AfterConfirmOrderServiceImpl implements AfterConfirmOrderService {
      */
     @Transactional
     @Override
-    public void afterDoConfirm(DailyTrainTicket dailyTrainTicket,List<DailyTrainSeat> finalSeatList) {
-        for (DailyTrainSeat dailyTrainSeat:finalSeatList) {
+    public void afterDoConfirm(DailyTrainTicket dailyTrainTicket, List<DailyTrainSeat> finalSeatList,
+                               List<ConfirmOrderTicketReq> tickets, ConfirmOrder confirmOrder) {
+        for (int j = 0; j < finalSeatList.size(); j++) {
+            DailyTrainSeat dailyTrainSeat = finalSeatList.get(j);
             DailyTrainSeat seatForUpdate = new DailyTrainSeat();
             seatForUpdate.setId(dailyTrainSeat.getId());
             seatForUpdate.setSell(dailyTrainSeat.getSell());
@@ -98,6 +108,24 @@ public class AfterConfirmOrderServiceImpl implements AfterConfirmOrderService {
                     maxStartIndex,
                     minEndIndex,
                     maxEndIndex);
+
+            // 调用会员服务接口，为会员增加一张车票
+            MemberTicketReq memberTicketReq = new MemberTicketReq();
+            memberTicketReq.setMemberId(confirmOrder.getMemberId());
+            memberTicketReq.setPassengerId(tickets.get(j).getPassengerId());
+            memberTicketReq.setPassengerName(tickets.get(j).getPassengerName());
+            memberTicketReq.setTrainDate(dailyTrainTicket.getDate());
+            memberTicketReq.setTrainCode(dailyTrainTicket.getTrainCode());
+            memberTicketReq.setCarriageIndex(dailyTrainSeat.getCarriageIndex());
+            memberTicketReq.setSeatRow(dailyTrainSeat.getRow());
+            memberTicketReq.setSeatCol(dailyTrainSeat.getCol());
+            memberTicketReq.setStartStation(dailyTrainTicket.getStart());
+            memberTicketReq.setStartTime(dailyTrainTicket.getStartTime());
+            memberTicketReq.setEndStation(dailyTrainTicket.getEnd());
+            memberTicketReq.setEndTime(dailyTrainTicket.getEndTime());
+            memberTicketReq.setSeatType(dailyTrainSeat.getSeatType());
+            CommonResp<Object> commonResp = memberFeign.save(memberTicketReq);
+            LOG.info("调用member接口，返回：{}", commonResp);
         }
     }
 }

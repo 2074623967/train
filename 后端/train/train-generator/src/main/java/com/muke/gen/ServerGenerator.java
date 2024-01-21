@@ -25,7 +25,7 @@ public class ServerGenerator {
     static String pomPath = "train-generator/pom.xml";
     static String module = "";
     static boolean readOnly = false;
-    static String vuePath = "../../前端/train-admin/src/views/main/";
+    static String vuePath = "../../前端/train-web/src/views/main/";
 
 //    static {
 //        new File(serverPath).mkdirs();
