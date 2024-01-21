@@ -185,7 +185,7 @@ public class ConfirmOrderServiceImpl implements ConfirmOrderService {
             }
         }
         LOG.info("最终选座：{}", finalSeatList);
-        afterConfirmOrderService.afterDoConfirm(finalSeatList);
+        afterConfirmOrderService.afterDoConfirm(dailyTrainTicket,finalSeatList);
     }
 
     /**
