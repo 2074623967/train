@@ -3,7 +3,9 @@ package com.muke.service.impl;
 import com.muke.domain.ConfirmOrder;
 import com.muke.domain.DailyTrainSeat;
 import com.muke.domain.DailyTrainTicket;
+import com.muke.enums.ConfirmOrderStatusEnum;
 import com.muke.feign.MemberFeign;
+import com.muke.mapper.ConfirmOrderMapper;
 import com.muke.mapper.DailyTrainSeatMapper;
 import com.muke.mapper.cust.DailyTrainTicketMapperCust;
 import com.muke.req.ConfirmOrderTicketReq;
@@ -38,6 +40,9 @@ public class AfterConfirmOrderServiceImpl implements AfterConfirmOrderService {
 
     @Resource
     private MemberFeign memberFeign;
+
+    @Resource
+    private ConfirmOrderMapper confirmOrderMapper;
 
     /**
      * 选中座位后事务处理:
@@ -126,6 +131,14 @@ public class AfterConfirmOrderServiceImpl implements AfterConfirmOrderService {
             memberTicketReq.setSeatType(dailyTrainSeat.getSeatType());
             CommonResp<Object> commonResp = memberFeign.save(memberTicketReq);
             LOG.info("调用member接口，返回：{}", commonResp);
+
+            // 更新订单状态为成功
+            ConfirmOrder confirmOrderForUpdate = new ConfirmOrder();
+            confirmOrderForUpdate.setId(confirmOrder.getId());
+            confirmOrderForUpdate.setUpdateTime(new Date());
+            confirmOrderForUpdate.setStatus(ConfirmOrderStatusEnum.SUCCESS.getCode());
+            confirmOrderMapper.updateByPrimaryKeySelective(confirmOrderForUpdate);
+
         }
     }
 }
