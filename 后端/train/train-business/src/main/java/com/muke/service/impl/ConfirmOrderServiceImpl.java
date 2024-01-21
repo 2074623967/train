@@ -23,10 +23,7 @@ import com.muke.req.ConfirmOrderQueryReq;
 import com.muke.req.ConfirmOrderTicketReq;
 import com.muke.resp.ConfirmOrderQueryResp;
 import com.muke.resp.PageResp;
-import com.muke.service.ConfirmOrderService;
-import com.muke.service.DailyTrainCarriageService;
-import com.muke.service.DailyTrainSeatService;
-import com.muke.service.DailyTrainTicketService;
+import com.muke.service.*;
 import com.muke.util.SnowUtil;
 import jakarta.annotation.Resource;
 import org.slf4j.Logger;
@@ -53,6 +50,9 @@ public class ConfirmOrderServiceImpl implements ConfirmOrderService {
 
     @Resource
     private DailyTrainSeatService dailyTrainSeatService;
+
+    @Resource
+    private AfterConfirmOrderService afterConfirmOrderService;
 
     public void save(ConfirmOrderDoReq req) {
         DateTime now = DateTime.now();
@@ -184,13 +184,8 @@ public class ConfirmOrderServiceImpl implements ConfirmOrderService {
                 );
             }
         }
-
-        // 选中座位后事务处理:
-        // 座位表修改售卖情况sell:
-        // 余票详情表修改余票:
-        // 为会员增加购票记录
-        // 更新确定订单表为成功
-
+        LOG.info("最终选座：{}", finalSeatList);
+        afterConfirmOrderService.afterDoConfirm(finalSeatList);
     }
 
     /**
@@ -227,16 +222,6 @@ public class ConfirmOrderServiceImpl implements ConfirmOrderService {
                 String col = dailyTrainSeat.getCol();
 
                 // 挑选符合条件的座位，如果这个车厢不满足，则进入下个车厢（多个选座应该在同一车厢）
-                // 判断column，有值的话要比对列号
-                if (StrUtil.isBlank(column)) {
-                    LOG.info("无选座");
-                } else {
-                    if (!column.equals(col)) {
-                        LOG.info("座位{}列值不对，继续判断下一个座位，当前列值：{}，目标列值：{}", seatIndex, col, column);
-                        continue;
-                    }
-                }
-
                 // 判断当前座位不能被选中过
                 boolean alreadyChooseFlag = false;
                 for (DailyTrainSeat finalSeat : finalSeatList) {
@@ -250,6 +235,15 @@ public class ConfirmOrderServiceImpl implements ConfirmOrderService {
                     continue;
                 }
 
+                // 判断column，有值的话要比对列号
+                if (StrUtil.isBlank(column)) {
+                    LOG.info("无选座");
+                } else {
+                    if (!column.equals(col)) {
+                        LOG.info("座位{}列值不对，继续判断下一个座位，当前列值：{}，目标列值：{}", seatIndex, col, column);
+                        continue;
+                    }
+                }
 
                 boolean isChoose = calSell(dailyTrainSeat, startIndex, endIndex);
                 if (isChoose) {
