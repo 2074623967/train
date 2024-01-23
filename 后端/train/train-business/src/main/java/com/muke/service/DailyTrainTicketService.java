@@ -13,6 +13,7 @@ public interface  DailyTrainTicketService {
 
     void save(DailyTrainTicketSaveReq req);
 
+    PageResp<DailyTrainTicketQueryResp> queryList2(DailyTrainTicketQueryReq req);
     PageResp<DailyTrainTicketQueryResp> queryList(DailyTrainTicketQueryReq req);
 
     void delete(Long id);

@@ -27,6 +27,7 @@ import com.muke.util.SnowUtil;
 import jakarta.annotation.Resource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -64,7 +65,12 @@ public class DailyTrainTicketServiceImpl implements DailyTrainTicketService {
         }
     }
 
-    @Cacheable(value = "DailyTrainTicketServiceImpl.queryList")
+    @CachePut(value = "DailyTrainTicketServiceImpl.queryList") // 强制刷新缓存
+    public PageResp<DailyTrainTicketQueryResp> queryList2(DailyTrainTicketQueryReq req) {
+        return queryList(req);
+    }
+
+    @Cacheable(value = "DailyTrainTicketServiceImpl.queryList") // 自动缓存
     public PageResp<DailyTrainTicketQueryResp> queryList(DailyTrainTicketQueryReq req) {
         DailyTrainTicketExample dailyTrainTicketExample = new DailyTrainTicketExample();
         dailyTrainTicketExample.setOrderByClause("id desc");
