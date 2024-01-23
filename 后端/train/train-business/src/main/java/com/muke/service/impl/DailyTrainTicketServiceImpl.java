@@ -72,6 +72,18 @@ public class DailyTrainTicketServiceImpl implements DailyTrainTicketService {
 
     @Cacheable(value = "DailyTrainTicketServiceImpl.queryList") // 自动缓存
     public PageResp<DailyTrainTicketQueryResp> queryList(DailyTrainTicketQueryReq req) {
+        // 常见的缓存过期策略
+        // TTL 超时时间
+        // LRU 最近最少使用
+        // LFU 最近最不经常使用
+        // FIFO 先进先出
+        // Random 随机淘汰策略
+        // 去缓存里取数据，因数据库本身就没数据而造成缓存穿透
+        // if (有数据) { null []
+        //     return
+        // } else {
+        //     去数据库取数据
+        // }
         DailyTrainTicketExample dailyTrainTicketExample = new DailyTrainTicketExample();
         dailyTrainTicketExample.setOrderByClause("id desc");
         DailyTrainTicketExample.Criteria criteria = dailyTrainTicketExample.createCriteria();

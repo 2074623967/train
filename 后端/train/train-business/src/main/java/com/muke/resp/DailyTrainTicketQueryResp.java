@@ -1,12 +1,16 @@
 package com.muke.resp;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
-import java.util.Date;
-import com.fasterxml.jackson.annotation.JsonFormat;
-import java.math.BigDecimal;
 
-public class DailyTrainTicketQueryResp {
+import java.io.Serializable;
+import java.math.BigDecimal;
+import java.util.Date;
+
+public class DailyTrainTicketQueryResp implements Serializable {
+
+    private static final long serialVersionUID = 1L;
 
     /**
      * id
