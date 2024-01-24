@@ -28,11 +28,13 @@ import com.muke.util.SnowUtil;
 import jakarta.annotation.Resource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 @Service
 public class ConfirmOrderServiceImpl implements ConfirmOrderService {
@@ -53,6 +55,9 @@ public class ConfirmOrderServiceImpl implements ConfirmOrderService {
 
     @Resource
     private AfterConfirmOrderService afterConfirmOrderService;
+
+    @Resource
+    private StringRedisTemplate stringRedisTemplate;
 
     public void save(ConfirmOrderDoReq req) {
         DateTime now = DateTime.now();
@@ -96,6 +101,15 @@ public class ConfirmOrderServiceImpl implements ConfirmOrderService {
 
     @Override
     public void doConfirm(ConfirmOrderDoReq req) {
+        String key = req.getDate() + "-" + req.getTrainCode();
+        Boolean setIfAbsent = stringRedisTemplate.opsForValue().setIfAbsent(key, key, 5, TimeUnit.SECONDS);
+        if (setIfAbsent) {
+            LOG.info("恭喜，抢到锁了！");
+        } else {
+            // 只是没抢到锁，并不知道票抢完了没，所以提示稍候再试
+            LOG.info("很遗憾，没抢到锁！");
+            throw new BusinessException(BusinessExceptionEnum.CONFIRM_ORDER_LOCK_FAIL);
+        }
         // 省略业务数据校验，如：车次是否存在，余票是否存在，车次是否在有效期内，ticket>0，同车次同乘客是否已经买过
 
         // 保存确认订单表，状态初始
@@ -167,8 +181,8 @@ public class ConfirmOrderServiceImpl implements ConfirmOrderService {
                     ticketReq0.getSeatTypeCode(),
                     ticketReq0.getSeat().split("")[0], // 从A1得到A
                     offsetList,
-                    dailyTrainTicket.getStartIndex(),
-                    dailyTrainTicket.getEndIndex()
+                    dailyTrainTicket.getStartIndex() - 1,
+                    dailyTrainTicket.getEndIndex() - 1
             );
         } else {
             LOG.info("本次购票没有选座");
@@ -179,14 +193,14 @@ public class ConfirmOrderServiceImpl implements ConfirmOrderService {
                         ticketReq.getSeatTypeCode(),
                         null,
                         null,
-                        dailyTrainTicket.getStartIndex(),
-                        dailyTrainTicket.getEndIndex()
+                        dailyTrainTicket.getStartIndex() - 1,
+                        dailyTrainTicket.getEndIndex() - 1
                 );
             }
         }
         LOG.info("最终选座：{}", finalSeatList);
         try {
-            afterConfirmOrderService.afterDoConfirm(dailyTrainTicket,finalSeatList,tickets,confirmOrder);
+            afterConfirmOrderService.afterDoConfirm(dailyTrainTicket, finalSeatList, tickets, confirmOrder);
         } catch (Exception e) {
             throw new BusinessException(BusinessExceptionEnum.CONFIRM_ORDER_EXCEPTION);
         }
@@ -364,24 +378,28 @@ public class ConfirmOrderServiceImpl implements ConfirmOrderService {
                         throw new BusinessException(BusinessExceptionEnum.CONFIRM_ORDER_TICKET_COUNT_ERROR);
                     }
                     dailyTrainTicket.setYdz(countLeft);
+                    break;
                 case EDZ:
                     countLeft = dailyTrainTicket.getEdz() - 1;
                     if (countLeft < 0) {
                         throw new BusinessException(BusinessExceptionEnum.CONFIRM_ORDER_TICKET_COUNT_ERROR);
                     }
                     dailyTrainTicket.setEdz(countLeft);
+                    break;
                 case RW:
                     countLeft = dailyTrainTicket.getRw() - 1;
                     if (countLeft < 0) {
                         throw new BusinessException(BusinessExceptionEnum.CONFIRM_ORDER_TICKET_COUNT_ERROR);
                     }
                     dailyTrainTicket.setRw(countLeft);
+                    break;
                 case YW:
                     countLeft = dailyTrainTicket.getYw() - 1;
                     if (countLeft < 0) {
                         throw new BusinessException(BusinessExceptionEnum.CONFIRM_ORDER_TICKET_COUNT_ERROR);
                     }
                     dailyTrainTicket.setYw(countLeft);
+                    break;
             }
         }
     }

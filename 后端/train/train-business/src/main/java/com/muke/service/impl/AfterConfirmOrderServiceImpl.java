@@ -83,8 +83,8 @@ public class AfterConfirmOrderServiceImpl implements AfterConfirmOrderService {
             // Integer maxStartIndex = endIndex - 1;
             // Integer minEndIndex = startIndex + 1;
             // Integer maxEndIndex = endIndex + 往后碰到的最后一个0;
-            Integer startIndex = dailyTrainTicket.getStartIndex();
-            Integer endIndex = dailyTrainTicket.getEndIndex();
+            Integer startIndex = dailyTrainTicket.getStartIndex()-1;
+            Integer endIndex = dailyTrainTicket.getEndIndex()-1;
             char[] chars = seatForUpdate.getSell().toCharArray();
             Integer maxStartIndex = endIndex - 1;
             Integer minEndIndex = startIndex + 1;

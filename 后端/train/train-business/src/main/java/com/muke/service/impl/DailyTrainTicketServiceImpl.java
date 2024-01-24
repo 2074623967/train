@@ -28,7 +28,6 @@ import jakarta.annotation.Resource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.cache.annotation.CachePut;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -70,7 +69,7 @@ public class DailyTrainTicketServiceImpl implements DailyTrainTicketService {
         return queryList(req);
     }
 
-    @Cacheable(value = "DailyTrainTicketServiceImpl.queryList") // 自动缓存
+    //@Cacheable(value = "DailyTrainTicketServiceImpl.queryList") // 自动缓存
     public PageResp<DailyTrainTicketQueryResp> queryList(DailyTrainTicketQueryReq req) {
         // 常见的缓存过期策略
         // TTL 超时时间
