@@ -27,8 +27,6 @@ import com.muke.resp.PageResp;
 import com.muke.service.*;
 import com.muke.util.SnowUtil;
 import jakarta.annotation.Resource;
-import org.redisson.api.RLock;
-import org.redisson.api.RedissonClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -62,8 +60,8 @@ public class ConfirmOrderServiceImpl implements ConfirmOrderService {
     @Resource
     private StringRedisTemplate stringRedisTemplate;
 
-    @Resource
-    private RedissonClient redissonClient;
+//    @Resource
+//    private RedissonClient redissonClient;
 
     public void save(ConfirmOrderDoReq req) {
         DateTime now = DateTime.now();
@@ -109,40 +107,50 @@ public class ConfirmOrderServiceImpl implements ConfirmOrderService {
     public void doConfirm(ConfirmOrderDoReq req) {
         String lockKey = DateUtil.formatDate(req.getDate()) + "-" + req.getTrainCode();
         // 保存确认订单表，状态初始
-//        Boolean setIfAbsent = stringRedisTemplate.opsForValue().setIfAbsent(key, key, 5, TimeUnit.SECONDS);
-//        if (Boolean.TRUE.equals(setIfAbsent)) {
-//            LOG.info("恭喜，抢到锁了！");
-//        } else {
-//            // 只是没抢到锁，并不知道票抢完了没，所以提示稍候再试
-//            LOG.info("很遗憾，没抢到锁！");
-//            throw new BusinessException(BusinessExceptionEnum.CONFIRM_ORDER_LOCK_FAIL);
-//        }
+        Boolean setIfAbsent = stringRedisTemplate.opsForValue().setIfAbsent(lockKey, lockKey, 5, TimeUnit.SECONDS);
+        if (Boolean.TRUE.equals(setIfAbsent)) {
+            LOG.info("恭喜，抢到锁了！");
+        } else {
+            // 只是没抢到锁，并不知道票抢完了没，所以提示稍候再试
+            LOG.info("很遗憾，没抢到锁！");
+            throw new BusinessException(BusinessExceptionEnum.CONFIRM_ORDER_LOCK_FAIL);
+        }
         // 省略业务数据校验，如：车次是否存在，余票是否存在，车次是否在有效期内，ticket>0，同车次同乘客是否已经买过
-
-        RLock lock = null;
+         /*
+            关于红锁，看16.7节：
+            A B C D E
+            1: A B C D E
+            2: C D E
+            3: C
+        */
+        //RLock lock = null;
         try {
             // 使用redisson，自带看门狗
-            lock = redissonClient.getLock(lockKey);
+            //lock = redissonClient.getLock(lockKey);
+            //lock2 = redissonClient2.getLock(lockKey);
+            // 使用红锁
+            //RedissonRedLock redissonRedLock = new RedissonRedLock(lock, lock, lock);
             /**
              waitTime – the maximum time to acquire the lock 等待获取锁时间(最大尝试获得锁的时间)，超时返回false
              leaseTime – lease time 锁时长，即n秒后自动释放锁
              time unit – time unit 时间单位
              */
             // // boolean tryLock = lock.tryLock(30, 10, TimeUnit.SECONDS); // 不带看门狗
-            boolean tryLock = lock.tryLock(0, TimeUnit.SECONDS); // 带看门狗
-            if (tryLock) {
-                LOG.info("恭喜，抢到锁了！");
-                // 可以把下面这段放开，只用一个线程来测试，看看redisson的看门狗效果
-                // for (int i = 0; i < 30; i++) {
-                //     Long expire = redisTemplate.opsForValue().getOperations().getExpire(lockKey);
-                //     LOG.info("锁过期时间还有：{}", expire);
-                //     Thread.sleep(1000);
-                // }
-            } else {
-                // 只是没抢到锁，并不知道票抢完了没，所以提示稍候再试
-                LOG.info("很遗憾，没抢到锁");
-                throw new BusinessException(BusinessExceptionEnum.CONFIRM_ORDER_LOCK_FAIL);
-            }
+//            boolean tryLock = lock.tryLock(0, TimeUnit.SECONDS); // 带看门狗
+//            boolean tryLock = redissonRedLock.tryLock(0, TimeUnit.SECONDS);
+//            if (tryLock) {
+//                LOG.info("恭喜，抢到锁了！");
+//                // 可以把下面这段放开，只用一个线程来测试，看看redisson的看门狗效果
+//                // for (int i = 0; i < 30; i++) {
+//                //     Long expire = redisTemplate.opsForValue().getOperations().getExpire(lockKey);
+//                //     LOG.info("锁过期时间还有：{}", expire);
+//                //     Thread.sleep(1000);
+//                // }
+//            } else {
+//                // 只是没抢到锁，并不知道票抢完了没，所以提示稍候再试
+//                LOG.info("很遗憾，没抢到锁");
+//                throw new BusinessException(BusinessExceptionEnum.CONFIRM_ORDER_LOCK_FAIL);
+//            }
 
             DateTime now = DateTime.now();
             Date date = req.getDate();
@@ -235,15 +243,15 @@ public class ConfirmOrderServiceImpl implements ConfirmOrderService {
             } catch (Exception e) {
                 throw new BusinessException(BusinessExceptionEnum.CONFIRM_ORDER_EXCEPTION);
             }
-        } catch (Exception e) {
-            LOG.error("购票异常", e);
+            LOG.info("购票流程结束，释放锁！lockKey:{}", lockKey);
+            stringRedisTemplate.delete(lockKey);
+//        } catch (Exception e) {
+//            LOG.error("购票异常", e);
         } finally {
-            LOG.info("购票流程结束，释放锁！");
-            if (null != lock && lock.isHeldByCurrentThread()) {
-                lock.unlock();
-            }
-//            //删除分布式锁
-//            stringRedisTemplate.delete(lockKey);
+//            LOG.info("购票流程结束，释放锁！");
+//            if (null != lock && lock.isHeldByCurrentThread()) {
+//                lock.unlock();
+//            }
         }
 
     }
