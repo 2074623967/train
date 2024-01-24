@@ -12,8 +12,6 @@ import com.muke.req.ConfirmOrderTicketReq;
 import com.muke.req.MemberTicketReq;
 import com.muke.resp.CommonResp;
 import com.muke.service.AfterConfirmOrderService;
-import io.seata.core.context.RootContext;
-import io.seata.spring.annotation.GlobalTransactional;
 import jakarta.annotation.Resource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -55,12 +53,12 @@ public class AfterConfirmOrderServiceImpl implements AfterConfirmOrderService {
      * @param finalSeatList
      * @throws Exception
      */
-    @GlobalTransactional
+   // @GlobalTransactional
     //@Transactional
     @Override
     public void afterDoConfirm(DailyTrainTicket dailyTrainTicket, List<DailyTrainSeat> finalSeatList,
                                List<ConfirmOrderTicketReq> tickets, ConfirmOrder confirmOrder) {
-        LOG.info("seata全局事务ID: {}", RootContext.getXID());
+        //LOG.info("seata全局事务ID: {}", RootContext.getXID());
         for (int j = 0; j < finalSeatList.size(); j++) {
             DailyTrainSeat dailyTrainSeat = finalSeatList.get(j);
             DailyTrainSeat seatForUpdate = new DailyTrainSeat();

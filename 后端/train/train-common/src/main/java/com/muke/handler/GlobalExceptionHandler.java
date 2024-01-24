@@ -1,9 +1,7 @@
 package com.muke.handler;
 
-import cn.hutool.core.util.StrUtil;
 import com.muke.exception.BusinessException;
 import com.muke.resp.CommonResp;
-import io.seata.core.context.RootContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.validation.BindException;
@@ -31,11 +29,11 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(value = Exception.class)
     @ResponseBody
     public CommonResp exceptionHandler(Exception e) throws Exception {
-        LOG.info("seata全局事务ID: {}", RootContext.getXID());
+//        LOG.info("seata全局事务ID: {}", RootContext.getXID());
         // 如果是在一次全局事务里出异常了，就不要包装返回值，将异常抛给调用方，让调用方回滚事务
-        if (StrUtil.isNotBlank(RootContext.getXID())) {
-            throw e;
-        }
+//        if (StrUtil.isNotBlank(RootContext.getXID())) {
+//            throw e;
+//        }
         CommonResp commonResp = new CommonResp();
         LOG.error("系统异常：", e);
         commonResp.setSuccess(false);
