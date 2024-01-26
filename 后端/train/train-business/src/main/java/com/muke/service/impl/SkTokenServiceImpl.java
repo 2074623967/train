@@ -2,32 +2,42 @@ package com.muke.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.date.DateTime;
+import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
-import com.muke.resp.PageResp;
-import com.muke.util.SnowUtil;
 import com.muke.domain.SkToken;
 import com.muke.domain.SkTokenExample;
 import com.muke.mapper.SkTokenMapper;
 import com.muke.req.SkTokenQueryReq;
 import com.muke.req.SkTokenSaveReq;
+import com.muke.resp.PageResp;
 import com.muke.resp.SkTokenQueryResp;
+import com.muke.service.DailyTrainSeatService;
+import com.muke.service.DailyTrainStationService;
 import com.muke.service.SkTokenService;
+import com.muke.util.SnowUtil;
 import jakarta.annotation.Resource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
+import java.util.Date;
 import java.util.List;
 
 @Service
-public class SkTokenServiceImpl implements SkTokenService{
+public class SkTokenServiceImpl implements SkTokenService {
 
     private static final Logger LOG = LoggerFactory.getLogger(SkTokenServiceImpl.class);
 
     @Resource
     private SkTokenMapper skTokenMapper;
+
+    @Resource
+    private DailyTrainSeatService dailyTrainSeatService;
+
+    @Resource
+    private DailyTrainStationService dailyTrainStationService;
 
     public void save(SkTokenSaveReq req) {
         DateTime now = DateTime.now();
@@ -67,5 +77,40 @@ public class SkTokenServiceImpl implements SkTokenService{
 
     public void delete(Long id) {
         skTokenMapper.deleteByPrimaryKey(id);
+    }
+
+    /**
+     * 初始化令牌
+     *
+     * @param date
+     * @param trainCode
+     */
+    @Override
+    public void genDaily(Date date, String trainCode) {
+        LOG.info("删除日期【{}】车次【{}】的令牌记录", DateUtil.formatDate(date), trainCode);
+        SkTokenExample skTokenExample = new SkTokenExample();
+        skTokenExample.createCriteria().andDateEqualTo(date).andTrainCodeEqualTo(trainCode);
+        skTokenMapper.deleteByExample(skTokenExample);
+
+        DateTime now = DateTime.now();
+        SkToken skToken = new SkToken();
+        skToken.setDate(date);
+        skToken.setTrainCode(trainCode);
+        skToken.setId(SnowUtil.getSnowflakeNextId());
+        skToken.setCreateTime(now);
+        skToken.setUpdateTime(now);
+
+        int seatCount = dailyTrainSeatService.countSeat(date, trainCode, "");
+        LOG.info("车次【{}】座位数：{}", trainCode, seatCount);
+
+        long stationCount = dailyTrainStationService.countByTrainCode(date, trainCode);
+        LOG.info("车次【{}】到站数：{}", trainCode, stationCount);
+
+        // 3/4需要根据实际卖票比例来定，一趟火车最多可以卖（seatCount * stationCount）张火车票
+        int count = (int) (seatCount * stationCount); // * 3/4);
+        LOG.info("车次【{}】初始生成令牌数：{}", trainCode, count);
+        skToken.setCount(count);
+
+        skTokenMapper.insert(skToken);
     }
 }

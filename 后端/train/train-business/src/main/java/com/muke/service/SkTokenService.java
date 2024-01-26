@@ -5,6 +5,8 @@ import com.muke.resp.PageResp;
 import com.muke.resp.SkTokenQueryResp;
 import com.muke.req.SkTokenQueryReq;
 
+import java.util.Date;
+
 public interface  SkTokenService {
 
     void save(SkTokenSaveReq req);
@@ -12,4 +14,6 @@ public interface  SkTokenService {
     PageResp<SkTokenQueryResp> queryList(SkTokenQueryReq req);
 
     void delete(Long id);
+
+    void genDaily(Date date, String trainCode);
 }
