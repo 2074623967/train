@@ -8,6 +8,7 @@ import cn.hutool.core.util.EnumUtil;
 import cn.hutool.core.util.NumberUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
+import com.alibaba.csp.sentinel.annotation.SentinelResource;
 import com.alibaba.fastjson.JSON;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
@@ -60,6 +61,9 @@ public class ConfirmOrderServiceImpl implements ConfirmOrderService {
     @Resource
     private StringRedisTemplate stringRedisTemplate;
 
+    @Resource
+    private SkTokenService skTokenService;
+
 //    @Resource
 //    private RedissonClient redissonClient;
 
@@ -104,9 +108,18 @@ public class ConfirmOrderServiceImpl implements ConfirmOrderService {
     }
 
     //@SentinelResource("doConfirm")
-    //@SentinelResource(value = "doConfirm",blockHandler = "doConfirmBlock")
+    @SentinelResource(value = "doConfirm",blockHandler = "doConfirmBlock")
     @Override
     public void doConfirm(ConfirmOrderDoReq req) {
+        // 校验令牌余量
+        boolean validSkToken = skTokenService.validSkToken(req.getDate(), req.getTrainCode(), LoginMemberContext.getId());
+        if (validSkToken) {
+            LOG.info("令牌校验通过");
+        } else {
+            LOG.info("令牌校验不通过");
+            throw new BusinessException(BusinessExceptionEnum.CONFIRM_ORDER_SK_TOKEN_FAIL);
+        }
+
         String lockKey = DateUtil.formatDate(req.getDate()) + "-" + req.getTrainCode();
         // 保存确认订单表，状态初始
         Boolean setIfAbsent = stringRedisTemplate.opsForValue().setIfAbsent(lockKey, lockKey, 5, TimeUnit.SECONDS);
