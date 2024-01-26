@@ -17,5 +17,5 @@ public interface  SkTokenService {
 
     void genDaily(Date date, String trainCode);
 
-    boolean validSkToken(Date date, String trainCode, Long id);
+    boolean validSkToken(Date date, String trainCode, Long memberId);
 }
