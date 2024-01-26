@@ -10,6 +10,8 @@ import jakarta.annotation.Resource;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.util.ObjectUtils;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -24,15 +26,35 @@ public class ConfirmOrderController {
     @Resource
     private ConfirmOrderService confirmOrderService;
 
+    @Resource
+    private StringRedisTemplate stringRedisTemplate;
+
     // 接口的资源名称不要和接口路径一致，会导致限流后走不到降级方法中
     @SentinelResource(value = "confirmOrderDo", blockHandler = "doConfirmBlock")
     @PostMapping("/do")
     public CommonResp<Object> doConfirm(@Valid @RequestBody ConfirmOrderDoReq req) {
+        // 图形验证码校验
+        String imageCodeToken = req.getImageCodeToken();
+        String imageCode = req.getImageCode();
+        String imageCodeRedis = stringRedisTemplate.opsForValue().get(imageCodeToken);
+        LOG.info("从redis中获取到的验证码：{}", imageCodeRedis);
+        if (ObjectUtils.isEmpty(imageCodeRedis)) {
+            return new CommonResp<>(false, "验证码已过期", null);
+        }
+        // 验证码校验，大小写忽略，提升体验，比如Oo Vv Ww容易混
+        if (!imageCodeRedis.equalsIgnoreCase(imageCode)) {
+            return new CommonResp<>(false, "验证码不正确", null);
+        } else {
+            // 验证通过后，移除验证码
+            stringRedisTemplate.delete(imageCodeToken);
+        }
         confirmOrderService.doConfirm(req);
         return new CommonResp<>();
     }
 
-    /** 降级方法，需包含限流方法的所有参数和BlockException参数，且返回值要保持一致
+    /**
+     * 降级方法，需包含限流方法的所有参数和BlockException参数，且返回值要保持一致
+     *
      * @param req
      * @param e
      */
