@@ -15,6 +15,7 @@ import com.github.pagehelper.PageInfo;
 import com.muke.context.LoginMemberContext;
 import com.muke.domain.*;
 import com.muke.enums.ConfirmOrderStatusEnum;
+import com.muke.enums.RedisKeyPreEnum;
 import com.muke.enums.SeatColEnum;
 import com.muke.enums.SeatTypeEnum;
 import com.muke.exception.BusinessException;
@@ -108,7 +109,7 @@ public class ConfirmOrderServiceImpl implements ConfirmOrderService {
     }
 
     //@SentinelResource("doConfirm")
-    @SentinelResource(value = "doConfirm",blockHandler = "doConfirmBlock")
+    @SentinelResource(value = "doConfirm", blockHandler = "doConfirmBlock")
     @Override
     public void doConfirm(ConfirmOrderDoReq req) {
         // 校验令牌余量
@@ -120,7 +121,7 @@ public class ConfirmOrderServiceImpl implements ConfirmOrderService {
             throw new BusinessException(BusinessExceptionEnum.CONFIRM_ORDER_SK_TOKEN_FAIL);
         }
 
-        String lockKey = DateUtil.formatDate(req.getDate()) + "-" + req.getTrainCode();
+        String lockKey = RedisKeyPreEnum.CONFIRM_ORDER + "-" + DateUtil.formatDate(req.getDate()) + "-" + req.getTrainCode();
         // 保存确认订单表，状态初始
         Boolean setIfAbsent = stringRedisTemplate.opsForValue().setIfAbsent(lockKey, lockKey, 5, TimeUnit.SECONDS);
         if (Boolean.TRUE.equals(setIfAbsent)) {
