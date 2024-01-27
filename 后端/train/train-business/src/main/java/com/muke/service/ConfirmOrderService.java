@@ -1,5 +1,6 @@
 package com.muke.service;
 
+import com.muke.dto.ConfirmOrderMQDto;
 import com.muke.req.ConfirmOrderDoReq;
 import com.muke.req.ConfirmOrderQueryReq;
 import com.muke.resp.ConfirmOrderQueryResp;
@@ -13,5 +14,5 @@ public interface  ConfirmOrderService {
 
     void delete(Long id);
 
-    void doConfirm(ConfirmOrderDoReq req);
+    void doConfirm(ConfirmOrderMQDto dto);
 }

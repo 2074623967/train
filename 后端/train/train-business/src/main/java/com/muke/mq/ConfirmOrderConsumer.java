@@ -1,7 +1,7 @@
 package com.muke.mq;
 
 import com.alibaba.fastjson.JSON;
-import com.muke.req.ConfirmOrderDoReq;
+import com.muke.dto.ConfirmOrderMQDto;
 import com.muke.service.ConfirmOrderService;
 import jakarta.annotation.Resource;
 import org.apache.rocketmq.common.message.MessageExt;
@@ -30,9 +30,9 @@ public class ConfirmOrderConsumer implements RocketMQListener<MessageExt> {
     @Override
     public void onMessage(MessageExt messageExt) {
         byte[] body = messageExt.getBody();
-        ConfirmOrderDoReq req = JSON.parseObject(new String(body), ConfirmOrderDoReq.class);
-        MDC.put("LOG_ID", req.getLogId());
+        ConfirmOrderMQDto dto = JSON.parseObject(new String(body), ConfirmOrderMQDto.class);
+        MDC.put("LOG_ID", dto.getLogId());
         LOG.info("ROCKETMQ收到消息：{}", new String(body));
-        confirmOrderService.doConfirm(req);
+        confirmOrderService.doConfirm(dto);
     }
 }
