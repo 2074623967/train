@@ -15,4 +15,6 @@ public interface  ConfirmOrderService {
     void delete(Long id);
 
     void doConfirm(ConfirmOrderMQDto dto);
+
+    Integer queryLineCount(Long id);
 }
