@@ -8,16 +8,15 @@ import com.muke.context.LoginMemberContext;
 import com.muke.domain.ConfirmOrder;
 import com.muke.dto.ConfirmOrderMQDto;
 import com.muke.enums.ConfirmOrderStatusEnum;
-import com.muke.enums.RocketMQTopicEnum;
 import com.muke.exception.BusinessException;
 import com.muke.exception.BusinessExceptionEnum;
 import com.muke.mapper.ConfirmOrderMapper;
 import com.muke.req.ConfirmOrderDoReq;
 import com.muke.service.BeforeConfirmOrderService;
+import com.muke.service.ConfirmOrderService;
 import com.muke.service.SkTokenService;
 import com.muke.util.SnowUtil;
 import jakarta.annotation.Resource;
-import org.apache.rocketmq.spring.core.RocketMQTemplate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
@@ -43,11 +42,14 @@ public class BeforeConfirmOrderServiceImpl implements BeforeConfirmOrderService 
     @Resource
     private SkTokenService skTokenService;
 
-    @Resource
-    private RocketMQTemplate rocketMQTemplate;
+//    @Resource
+//    private RocketMQTemplate rocketMQTemplate;
 
     @Resource
     private ConfirmOrderMapper confirmOrderMapper;
+
+    @Resource
+    private ConfirmOrderService confirmOrderService;
 
     @SentinelResource(value = "beforeDoConfirm", blockHandler = "beforeDoConfirmBlock")
     @Override
@@ -86,10 +88,11 @@ public class BeforeConfirmOrderServiceImpl implements BeforeConfirmOrderService 
         confirmOrderMQDto.setDate(req.getDate());
         confirmOrderMQDto.setTrainCode(req.getTrainCode());
         confirmOrderMQDto.setLogId(MDC.get("LOG_ID"));
-        String reqJson = JSON.toJSONString(confirmOrderMQDto);
-        LOG.info("排队购票，发送mq开始，消息：{}", reqJson);
-        rocketMQTemplate.convertAndSend(RocketMQTopicEnum.CONFIRM_ORDER.getCode(), reqJson);
-        LOG.info("排队购票，发送mq结束");
+        //String reqJson = JSON.toJSONString(confirmOrderMQDto);
+        //LOG.info("排队购票，发送mq开始，消息：{}", reqJson);
+        //rocketMQTemplate.convertAndSend(RocketMQTopicEnum.CONFIRM_ORDER.getCode(), reqJson);
+        confirmOrderService.doConfirm(confirmOrderMQDto);
+        //LOG.info("排队购票，发送mq结束");
         return confirmOrder.getId();
     }
 
