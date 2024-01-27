@@ -5,6 +5,7 @@ import com.alibaba.csp.sentinel.slots.block.BlockException;
 import com.muke.exception.BusinessExceptionEnum;
 import com.muke.req.ConfirmOrderDoReq;
 import com.muke.resp.CommonResp;
+import com.muke.service.BeforeConfirmOrderService;
 import com.muke.service.ConfirmOrderService;
 import jakarta.annotation.Resource;
 import jakarta.validation.Valid;
@@ -29,6 +30,9 @@ public class ConfirmOrderController {
     @Resource
     private StringRedisTemplate stringRedisTemplate;
 
+    @Resource
+    private BeforeConfirmOrderService beforeConfirmOrderService;
+
     // 接口的资源名称不要和接口路径一致，会导致限流后走不到降级方法中
     @SentinelResource(value = "confirmOrderDo", blockHandler = "doConfirmBlock")
     @PostMapping("/do")
@@ -48,7 +52,8 @@ public class ConfirmOrderController {
             // 验证通过后，移除验证码
             stringRedisTemplate.delete(imageCodeToken);
         }
-        confirmOrderService.doConfirm(req);
+        //confirmOrderService.doConfirm(req);
+        beforeConfirmOrderService.beforeDoConfirm(req);
         return new CommonResp<>();
     }
 
