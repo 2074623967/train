@@ -128,8 +128,11 @@ public class ConfirmOrderServiceImpl implements ConfirmOrderService {
             LOG.info("恭喜，抢到锁了！");
         } else {
             // 只是没抢到锁，并不知道票抢完了没，所以提示稍候再试
-            LOG.info("很遗憾，没抢到锁！");
-            throw new BusinessException(BusinessExceptionEnum.CONFIRM_ORDER_LOCK_FAIL);
+            // LOG.info("很遗憾，没抢到锁！lockKey：{}", lockKey);
+            // throw new BusinessException(BusinessExceptionEnum.CONFIRM_ORDER_LOCK_FAIL);
+
+            LOG.info("没抢到锁，有其它消费线程正在出票，不做任何处理");
+            return;
         }
         // 省略业务数据校验，如：车次是否存在，余票是否存在，车次是否在有效期内，ticket>0，同车次同乘客是否已经买过
          /*
