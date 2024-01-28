@@ -4,6 +4,7 @@
       <a-date-picker
         v-model:value="params.date"
         valueFormat="YYYY-MM-DD"
+        :disabled-date="disabledDate"
         placeholder="请选择日期"
       ></a-date-picker>
       <station-select-view
@@ -323,6 +324,14 @@ export default defineComponent({
         });
     };
 
+    // 不能选择今天以前及两周以后的日期
+    const disabledDate = current => {
+      return (
+        current &&
+        (current <= dayjs().add(-1, 'day') || current > dayjs().add(14, 'day'))
+      );
+    };
+
     onMounted(() => {
       //  "|| {}"是常用技巧，可以避免空指针异常
       params.value =
@@ -348,6 +357,7 @@ export default defineComponent({
       visible,
       stations,
       showStation,
+      disabledDate,
     };
   },
 });
