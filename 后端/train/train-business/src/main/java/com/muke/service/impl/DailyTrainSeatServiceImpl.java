@@ -15,8 +15,10 @@ import com.muke.domain.TrainStation;
 import com.muke.mapper.DailyTrainSeatMapper;
 import com.muke.req.DailyTrainSeatQueryReq;
 import com.muke.req.DailyTrainSeatSaveReq;
+import com.muke.req.SeatSellReq;
 import com.muke.resp.DailyTrainSeatQueryResp;
 import com.muke.resp.PageResp;
+import com.muke.resp.SeatSellResp;
 import com.muke.service.DailyTrainSeatService;
 import com.muke.service.TrainSeatService;
 import com.muke.service.TrainStationService;
@@ -31,7 +33,7 @@ import java.util.Date;
 import java.util.List;
 
 @Service
-public class DailyTrainSeatServiceImpl implements DailyTrainSeatService{
+public class DailyTrainSeatServiceImpl implements DailyTrainSeatService {
 
     private static final Logger LOG = LoggerFactory.getLogger(DailyTrainSeatServiceImpl.class);
 
@@ -146,5 +148,25 @@ public class DailyTrainSeatServiceImpl implements DailyTrainSeatService{
                 .andTrainCodeEqualTo(trainCode)
                 .andCarriageIndexEqualTo(carriageIndex);
         return dailyTrainSeatMapper.selectByExample(example);
+    }
+
+    /**
+     * 查询某日某车次的所有座位
+     *
+     * @param req
+     * @return
+     */
+    @Override
+    public List<SeatSellResp> querySeatSell(SeatSellReq req) {
+        Date date = req.getDate();
+        String trainCode = req.getTrainCode();
+        LOG.info("查询日期【{}】车次【{}】的座位销售信息", DateUtil.formatDate(date), trainCode);
+        DailyTrainSeatExample dailyTrainSeatExample = new DailyTrainSeatExample();
+        dailyTrainSeatExample.setOrderByClause("`carriage_index` asc, carriage_seat_index asc");
+        dailyTrainSeatExample.createCriteria()
+                .andDateEqualTo(date)
+                .andTrainCodeEqualTo(trainCode);
+        return BeanUtil.copyToList(dailyTrainSeatMapper.selectByExample(dailyTrainSeatExample),
+                SeatSellResp.class);
     }
 }
