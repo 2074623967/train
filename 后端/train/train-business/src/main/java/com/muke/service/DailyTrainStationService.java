@@ -7,6 +7,7 @@ import com.muke.req.DailyTrainStationQueryReq;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.Date;
+import java.util.List;
 
 public interface  DailyTrainStationService {
 
@@ -19,4 +20,6 @@ public interface  DailyTrainStationService {
     void genDaily(Date date, String code);
 
     long countByTrainCode(@Param("date") Date date, @Param("trainCode") String trainCode);
+
+    List<DailyTrainStationQueryResp> queryByTrain(Date date, String trainCode);
 }
