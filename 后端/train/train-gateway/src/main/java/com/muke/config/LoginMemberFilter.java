@@ -57,7 +57,6 @@ public class LoginMemberFilter implements Ordered, GlobalFilter {
             exchange.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED);
             return exchange.getResponse().setComplete();
         }
-
     }
 
     /**

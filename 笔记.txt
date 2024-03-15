@@ -1,0 +1,22 @@
+限流规则
+
+[
+    {
+        "resource": "confirmOrderDo",
+        "limitApp": "default",
+        "grade": 1,
+        "count": 100,
+        "strategy": 0,
+        "controlBehavior": 0,
+        "clusterMode": false
+    },
+ {
+        "resource": "doConfirm",
+        "limitApp": "default",
+        "grade": 1,
+        "count": 4,
+        "strategy": 0,
+        "controlBehavior": 0,
+        "clusterMode": false
+    }
+]
